@@ -1,0 +1,13 @@
+[i18n]
+	filesEncoding = utf-8
+[core]
+	editor = SublimeText -w --multiinstance
+	autocrlf = False
+[merge]
+	tool = kdiff3
+[diff]
+	guitool = araxis
+[mergetool "kdiff3"]
+	path = /Applications/kdiff3.app/Contents/MacOS/kdiff3
+[push]
+	default = simple
