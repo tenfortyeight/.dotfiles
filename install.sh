@@ -34,5 +34,18 @@ done
 
 # vim stuff
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 echo "Remember to run :PlugInstall in vim aswell...\n"
+
+# setup ssh-keys and gitconfig
+read -p "Git config display name: " name
+read -p "Git config email and ssh email: " email
+
+git config --global user.name "$name"
+git config --global user.email "$email"
+
+ssh-keygen -t rsa -b 4096 -C "$email"
+eval "$(ssh-agent -s)"
+ssh-add -K ~/.ssh/id_rsa
+pbcopy < ~/.ssh/id_rsa.pub
+echo "Your public sshkey is available in the clipboard\n"
