@@ -24,6 +24,9 @@ if is-executable brew; then
 	sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 	
 	brew install git node yarn;
+
+  # skaffold for K8s
+  curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-darwin-amd64 && chmod +x skaffold && sudo mv skaffold /usr/local/bin
 fi
 
 # symlink dotfiles
@@ -36,6 +39,12 @@ done
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
   https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 echo "Remember to run :PlugInstall in vim aswell...\n"
+
+# zsh stuff
+cp ./bullet-train.zsh-theme ~/.oh-my-zsh/custom/themes/
+git clone https://github.com/powerline/fonts.git --depth=1
+rm -rf fonts/
+echo "Change font to Roboto Mono Medium 12 pt for both ascii and non-ascii fonts i iTerm\n"
 
 # setup ssh-keys and gitconfig
 read -p "Git config display name: " name
