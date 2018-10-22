@@ -26,7 +26,7 @@ if is-executable brew; then
 	brew install zsh zsh-completions
 	sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 	
-	brew install git node yarn
+	brew install git node yarn ripgrep
 
   # dotnet core with extra symlink
   brew cask install dotnet
@@ -41,6 +41,9 @@ for file in `find . -type f -name ".*[^\.swp]"`
 do
 	ln -sfv "$DOTFILES_DIR/${file##*/}" ~
 done
+
+source ./.zshrc
+source ./.bashrc
 
 # vim stuff
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
@@ -65,3 +68,5 @@ eval "$(ssh-agent -s)"
 ssh-add -K ~/.ssh/id_rsa
 pbcopy < ~/.ssh/id_rsa.pub
 echo "Your public sshkey is available in the clipboard\n"
+echo "Remember to source .vimrc in vim\n"
+
