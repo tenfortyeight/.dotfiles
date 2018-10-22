@@ -19,11 +19,18 @@ fi
 
 # install some tools
 if is-executable brew; then
+  brew update
+  brew tap caskroom/cask
+
 	# oh my zsh
 	brew install zsh zsh-completions
 	sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 	
-	brew install git node yarn;
+	brew install git node yarn
+
+  # dotnet core with extra symlink
+  brew cask install dotnet
+  ln -s /usr/local/share/dotnet/dotnet /usr/local/bin/
 
   # skaffold for K8s
   curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-darwin-amd64 && chmod +x skaffold && sudo mv skaffold /usr/local/bin
