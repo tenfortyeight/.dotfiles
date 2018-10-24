@@ -12,7 +12,7 @@ let g:indent_guides_enable_on_vim_startup=1
 let g:rg_command = '
   \ rg --column --line-number --no-heading --fixed-strings --ignore-case --follow --color "always"
   \ -g "*.{js,json,php,md,styl,jade,html,config,py,cpp,c,go,hs,rb,conf,cs}"
-  \ -g "!{.git,node_modules,dist,vendor,bin,obj}/*" '
+  \ -g "!{.git,node_modules,dist,vendor,bin,obj,out}/*" '
 
 command! -bang -nargs=* F call fzf#vim#grep(g:rg_command .shellescape(<q-args>), 1, <bang>0)
 

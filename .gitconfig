@@ -11,3 +11,6 @@
 	path = /Applications/kdiff3.app/Contents/MacOS/kdiff3
 [push]
 	default = simple
+[user]
+	email = john@magnusson.gl
+	name = John M
