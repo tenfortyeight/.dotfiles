@@ -53,6 +53,7 @@ echo "Remember to run :PlugInstall in vim aswell...\n"
 # zsh stuff
 cp ./bullet-train.zsh-theme ~/.oh-my-zsh/custom/themes/
 git clone https://github.com/powerline/fonts.git --depth=1
+./fonts/install.sh
 rm -rf fonts/
 echo "Change font to Roboto Mono Medium 12 pt for both ascii and non-ascii fonts i iTerm\n"
 
