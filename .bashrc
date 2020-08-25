@@ -5,3 +5,5 @@ export FZF_DEFAULT_COMMAND='rg --files --follow -g "!{.git,node_modules,bin,obj,
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 bindkey '^p'  'vim $(fzf)'
 
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash

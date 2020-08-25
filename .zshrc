@@ -1,3 +1,5 @@
+ZSH_DISABLE_COMPFIX=true
+
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -7,6 +9,27 @@ export ZSH="$HOME/.oh-my-zsh"
 # time that oh-my-zsh is loaded.
 #ZSH_THEME="lukerandall"
 ZSH_THEME="bullet-train"
+BULLETTRAIN_PROMPT_ORDER=(
+  time
+  status
+  # custom
+  # context
+  dir
+  screen
+  # perl
+  # ruby
+  # virtualenv
+  nvm
+  # aws
+  # go
+  # rust
+  # elixir
+  git
+  hg
+  cmd_exec_time
+)
+BULLETTRAIN_PROMPT_CHAR=""
+BULLETTRAIN_PROMPT_SEPARATE_LINE=false
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
