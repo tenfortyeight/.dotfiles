@@ -60,6 +60,27 @@ else
   ok "already present"
 fi
 
+# --- zsh plugins -----------------------------------------------------------
+# None of these ship with oh-my-zsh, and the Homebrew builds of the zsh-users
+# ones install to the brew prefix — which is NOT where oh-my-zsh looks. They
+# have to be clones under $ZSH_CUSTOM/plugins or `plugins=(...)` in .zshrc
+# reports them as missing on every shell start.
+info "zsh plugins"
+ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+clone_plugin() {
+  local name=$1 url=$2 dir="$ZSH_CUSTOM_DIR/plugins/$1"
+  if [ ! -d "$dir" ]; then
+    git clone --depth=1 "$url" "$dir" >/dev/null 2>&1
+    ok "$name cloned"
+  else
+    git -C "$dir" pull --ff-only --quiet 2>/dev/null || true
+    ok "$name already present"
+  fi
+}
+clone_plugin zsh-autosuggestions     https://github.com/zsh-users/zsh-autosuggestions
+clone_plugin zsh-syntax-highlighting https://github.com/zsh-users/zsh-syntax-highlighting.git
+clone_plugin jq                      https://github.com/reegnz/jq-zsh-plugin.git
+
 # --- Symlinks --------------------------------------------------------------
 # An explicit list, not a find(1) glob. The old glob swept up .DS_Store and
 # anything else that happened to be lying around.

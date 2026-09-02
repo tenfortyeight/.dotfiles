@@ -33,6 +33,16 @@ CLI shims on first run, so they will not exist until you have opened the app.
 cluster: Settings → Kubernetes → Enable. It is off by default and `brew bundle`
 cannot turn it on.
 
+**Install the vim plugins.** `install.sh` fetches vim-plug, but the plugins in
+`.vimrc` are pulled by vim itself:
+
+```sh
+vim +PlugInstall +qall
+```
+
+Or open vim and run `:PlugInstall`. Re-run it after adding a `Plug` line;
+`:PlugClean` removes ones you have deleted.
+
 Optionally, `p10k configure` to re-run the prompt wizard — though `.p10k.zsh` is
 committed here, so the prompt should already look right.
 
@@ -61,6 +71,19 @@ exists and ignores it if not. Also gitignored, also never committed.
 | `install.sh` | the bootstrap |
 
 ## Notes
+
+**zsh plugins.** `git`, `github`, `brew` and `kubectl` ship with oh-my-zsh.
+`jq`, `zsh-autosuggestions` and `zsh-syntax-highlighting` do not — `install.sh`
+clones them into `$ZSH_CUSTOM/plugins`. Installing the zsh-users ones with
+Homebrew is not enough: those land in the brew prefix, which oh-my-zsh never
+scans, so they look installed while every shell start still reports them
+missing. `.zshrc` only enables plugins that are actually present, so a fresh
+machine is quiet rather than noisy before `install.sh` has run.
+
+`zsh-syntax-highlighting` must stay last in the plugin list — it wraps the line
+editor, and anything loaded after it goes unhighlighted. It is also why the
+powerlevel10k instant-prompt block at the top of `.zshrc` is commented out: the
+two fight over the line editor during startup.
 
 `nvm` is sourced from whichever location it was installed to — Homebrew's prefix
 or `~/.nvm` — so it works whether it came from `brew` or from nvm's own

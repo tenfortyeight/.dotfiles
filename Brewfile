@@ -10,8 +10,10 @@
 # ---------------------------------------------------------------------------
 brew "zsh"
 brew "zsh-completions"
-brew "zsh-autosuggestions"          # plugin, loaded from .zshrc
-brew "zsh-syntax-highlighting"      # plugin, must stay last in the plugins list
+# NOT zsh-autosuggestions / zsh-syntax-highlighting: the Homebrew builds install
+# to the brew prefix, which oh-my-zsh does not scan, so they would appear
+# installed while `plugins=(...)` still reported them missing. install.sh clones
+# them into $ZSH_CUSTOM/plugins instead, along with the jq plugin.
 
 # ---------------------------------------------------------------------------
 # Core CLI
