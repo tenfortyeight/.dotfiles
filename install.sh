@@ -102,6 +102,29 @@ for file in .zshrc .zprofile .bashrc .bash_profile .gitconfig .gitignore .vimrc 
   ok "~/$file"
 done
 
+# --- nvm --------------------------------------------------------------------
+# Homebrew installs nvm.sh into the brew prefix but does NOT create $NVM_DIR,
+# and nvm refuses to work without it. .zshrc sources nvm.sh from either location.
+info "nvm"
+mkdir -p "$HOME/.nvm"
+# shellcheck disable=SC2088  # display text, not a path
+ok "~/.nvm ready"
+
+# --- fzf ---------------------------------------------------------------------
+# The formula ships the binary; the key bindings (ctrl-r history, ctrl-t files)
+# come from its install script, which writes ~/.fzf.zsh. .zshrc sources that
+# file, so without this step fzf works as a command but none of the bindings do.
+info "fzf key bindings"
+if [ ! -f "$HOME/.fzf.zsh" ] && [ -x "$(brew --prefix)/opt/fzf/install" ]; then
+  "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
+  # shellcheck disable=SC2088  # display text, not a path
+  ok "~/.fzf.zsh written"
+elif [ -f "$HOME/.fzf.zsh" ]; then
+  ok "already present"
+else
+  warn "fzf not installed by brew — skipping"
+fi
+
 # --- vim -------------------------------------------------------------------
 info "vim-plug"
 if [ ! -f "$HOME/.vim/autoload/plug.vim" ]; then

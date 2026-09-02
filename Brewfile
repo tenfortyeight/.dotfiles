@@ -29,9 +29,12 @@ brew "coreutils"
 # ---------------------------------------------------------------------------
 # Languages and runtimes
 # ---------------------------------------------------------------------------
-brew "nvm"                          # .zshrc sources it from either brew or ~/.nvm
+# nvm.sh lands in the brew prefix, NOT in $NVM_DIR — .zshrc checks both, and
+# install.sh creates ~/.nvm, which Homebrew leaves to you.
+brew "nvm"
 brew "node"
 brew "go"
+brew "bun"                          # .zshrc puts ~/.bun/bin on PATH and loads its completions
 
 # ---------------------------------------------------------------------------
 # Infrastructure
@@ -54,7 +57,9 @@ cask "font-meslo-lg-nerd-font"
 # Desktop apps
 # ---------------------------------------------------------------------------
 cask "docker-desktop"               # also provides the built-in Kubernetes
+cask "gcloud-cli"                   # .zshrc sources its path/completion from the brew prefix
 cask "rectangle"                    # window snapping via keyboard shortcuts
 cask "claude"                       # Anthropic's desktop app
+cask "claude-code"                  # the CLI
 cask "aldente"                      # cap the battery charge percentage
 cask "notunes"                      # stop Apple Music hijacking the play key

@@ -57,10 +57,23 @@ export EDITOR="$VISUAL"
 # ---------------------------------------------------------------------------
 export HOMEBREW_AUTO_UPDATE_SECS=604800
 
-# nvm — the path expression is the one nvm's own installer writes.
+# nvm. NVM_DIR is where nvm keeps installed node versions and must exist either
+# way — but nvm.sh itself lives in different places depending on how nvm was
+# installed: nvm's own installer puts it in $NVM_DIR, Homebrew puts it in the
+# brew prefix and leaves $NVM_DIR for you to create. Checking only $NVM_DIR
+# meant a brew-installed nvm silently never loaded, which looks exactly like
+# nvm not being installed at all.
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+for _nvm_sh in "$NVM_DIR/nvm.sh" "${HOMEBREW_PREFIX:-/opt/homebrew}/opt/nvm/nvm.sh"; do
+  if [ -s "$_nvm_sh" ]; then
+    \. "$_nvm_sh"
+    _nvm_completion="${_nvm_sh:h}/etc/bash_completion.d/nvm"
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    [ -s "$_nvm_completion" ] && \. "$_nvm_completion"
+    break
+  fi
+done
+unset _nvm_sh _nvm_completion
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
