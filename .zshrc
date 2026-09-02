@@ -1,128 +1,92 @@
-ZSH_DISABLE_COMPFIX=true
-
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-
-# Set name of the theme to load.
-# Look in ~/.oh-my-zsh/themes/
-# Optionally, if you set this to "random", it'll load a random theme each
-# time that oh-my-zsh is loaded.
-#ZSH_THEME="lukerandall"
-ZSH_THEME="bullet-train"
-BULLETTRAIN_PROMPT_ORDER=(
-  time
-  status
-  # custom
-  # context
-  dir
-  screen
-  # perl
-  # ruby
-  # virtualenv
-  nvm
-  # aws
-  # go
-  # rust
-  # elixir
-  git
-  hg
-  cmd_exec_time
-)
-BULLETTRAIN_PROMPT_CHAR=""
-BULLETTRAIN_PROMPT_SEPARATE_LINE=false
-
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
-
-# Uncomment the following line to use hyphen-insensitive completion. Case
-# sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
-
-# Uncomment the following line to disable bi-weekly auto-update checks.
-# DISABLE_AUTO_UPDATE="true"
-
-# Uncomment the following line to change how often to auto-update (in days).
-# export UPDATE_ZSH_DAYS=13
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
-# COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# The optional three formats: "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
-# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(git github brew grunt gulp)
-
-# User configuration
-
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/bin"
-export ANDROID_HOME="/usr/local/opt/android-sdk"
-# export MANPATH="/usr/local/man:$MANPATH"
-
-source $ZSH/oh-my-zsh.sh
-
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 # fi
 
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
+ZSH_DISABLE_COMPFIX=true
 
-# ssh
-# export SSH_KEY_PATH="~/.ssh/dsa_id"
+# ---------------------------------------------------------------------------
+# PATH
+# ---------------------------------------------------------------------------
+# Homebrew is set up in ~/.zprofile (login shell), so it is already on PATH by
+# the time we get here. Only personal bin dirs belong below.
+# `typeset -U` keeps the array de-duplicated no matter how often this is sourced.
+typeset -U path PATH
+path=("$HOME/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
 
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+# ---------------------------------------------------------------------------
+# oh-my-zsh
+# ---------------------------------------------------------------------------
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
 
-[ -s "$HOME/.dnx/dnvm/dnvm.sh" ] && . "$HOME/.dnx/dnvm/dnvm.sh" # Load dnvm
+# NOTE: zsh-syntax-highlighting must stay last
+plugins=(git github brew jq kubectl zsh-autosuggestions zsh-syntax-highlighting)
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '$HOME/Downloads/google-cloud-sdk/path.zsh.inc' ]; then source '$HOME/Downloads/google-cloud-sdk/path.zsh.inc'; fi
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#333333,bg=black,bold,underline"
 
-# The next line enables shell command completion for gcloud.
-if [ -f '$HOME/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then source '$HOME/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
+source "$ZSH/oh-my-zsh.sh"
 
+# ---------------------------------------------------------------------------
+# Editor
+# ---------------------------------------------------------------------------
+export GIT_EDITOR="vim"
+export VISUAL="vim"
+export EDITOR="$VISUAL"
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# ---------------------------------------------------------------------------
+# Tooling
+# ---------------------------------------------------------------------------
+export HOMEBREW_AUTO_UPDATE_SECS=604800
 
-# --files: List files that would be searched but do not search
-# --no-ignore: Do not respect .gitignore, etc...
-# --hidden: Search hidden files and folders
-# --follow: Follow symlinks
-# --glob: Additional conditions for search (in this case ignore everything in the .git/ folder)
-# export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+# nvm — the path expression is the one nvm's own installer writes.
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
+# bun
+export BUN_INSTALL="$HOME/.bun"
+[ -d "$BUN_INSTALL/bin" ] && path=("$BUN_INSTALL/bin" $path)
+[ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
+
+# fzf
+[ -f "$HOME/.fzf.zsh" ] && source "$HOME/.fzf.zsh"
+
+# Google Cloud SDK (installed by the gcloud-cli cask)
+_gcloud_sdk="${HOMEBREW_PREFIX:-/opt/homebrew}/share/google-cloud-sdk"
+[ -f "$_gcloud_sdk/path.zsh.inc" ] && source "$_gcloud_sdk/path.zsh.inc"
+[ -f "$_gcloud_sdk/completion.zsh.inc" ] && source "$_gcloud_sdk/completion.zsh.inc"
+unset _gcloud_sdk
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+# ~/.env holds machine-local key/value secrets and is never committed.
+# `set -a` exports everything the file defines; quoted values and spaces survive.
+if [ -f "$HOME/.env" ]; then
+  set -a
+  source "$HOME/.env"
+  set +a
+fi
+
+# ---------------------------------------------------------------------------
+# Aliases
+# ---------------------------------------------------------------------------
+alias tf='terraform'
+alias kc='kubectl'
+alias wind='windsurf'
+alias python='python3'
+alias pip='pip3'
+
+# ---------------------------------------------------------------------------
+# Prompt
+# ---------------------------------------------------------------------------
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[ -f "$HOME/.p10k.zsh" ] && source "$HOME/.p10k.zsh"
+
+# ---------------------------------------------------------------------------
+# Machine-local overrides — last, so they win. Not in git.
+# ---------------------------------------------------------------------------
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
