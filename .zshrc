@@ -105,7 +105,6 @@ fi
 # ---------------------------------------------------------------------------
 alias tf='terraform'
 alias kc='kubectl'
-alias wind='windsurf'
 alias python='python3'
 alias pip='pip3'
 
