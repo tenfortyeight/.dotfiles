@@ -69,12 +69,21 @@ info "zsh plugins"
 ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 clone_plugin() {
   local name=$1 url=$2 dir="$ZSH_CUSTOM_DIR/plugins/$1"
-  if [ ! -d "$dir" ]; then
-    git clone --depth=1 "$url" "$dir" >/dev/null 2>&1
+  if [ -d "$dir" ]; then
+    git -C "$dir" pull --ff-only --quiet 2>/dev/null || warn "$name: could not update, keeping what is there"
+    ok "$name already present"
+    return
+  fi
+  # Loud on failure, and verified afterwards. A silently failed clone would
+  # otherwise print a tick and leave the shell reporting a missing plugin.
+  if ! git clone --depth=1 "$url" "$dir"; then
+    warn "$name: clone FAILED — .zshrc will skip it until this succeeds"
+    return
+  fi
+  if [ -f "$dir/$name.plugin.zsh" ]; then
     ok "$name cloned"
   else
-    git -C "$dir" pull --ff-only --quiet 2>/dev/null || true
-    ok "$name already present"
+    warn "$name: cloned but no $name.plugin.zsh — oh-my-zsh will not load it"
   fi
 }
 clone_plugin zsh-autosuggestions     https://github.com/zsh-users/zsh-autosuggestions
