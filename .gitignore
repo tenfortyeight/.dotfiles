@@ -1,1 +1,14 @@
+# macOS
+.DS_Store
+._*
+
+# Editor scratch
 *.swp
+*.swo
+
+# Machine-local config — job-specific paths, secrets, per-machine overrides.
+# See README.md.
+*.local
+.zshrc.local
+.env
+.env.*
