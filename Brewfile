@@ -37,7 +37,11 @@ brew "go"
 # Infrastructure
 # ---------------------------------------------------------------------------
 brew "kubectl"
-brew "terraform"                    # .terraformrc sets a shared plugin cache
+# No terraform: Homebrew dropped it from core after HashiCorp relicensed to BSL,
+# so `brew "terraform"` fails the whole bundle. If you want it back, either
+# `brew "hashicorp/tap/terraform"` with `tap "hashicorp/tap"` above, or
+# `brew "opentofu"` — the drop-in fork, still in core, and it honours the
+# .terraformrc plugin cache in this repo.
 
 # ---------------------------------------------------------------------------
 # Fonts
