@@ -23,6 +23,7 @@ call plug#begin('~/.vim/plugged')
   Plug 'jremmen/vim-ripgrep'
   Plug 'qpkorr/vim-bufkill'
   Plug 'vim-airline/vim-airline'
+  Plug 'gisphm/vim-gitignore'
 
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim'
@@ -60,6 +61,6 @@ command! -bang -nargs=* Find call fzf#vim#grep('rg
   \ --no-ignore 
   \ --hidden 
   \ --follow 
-  \ --glob "!{.git/*,bin,obj}" 
+  \ --glob "!{.git/*,bin,obj,node_modules/}" 
   \ --color "always" 
   \ '.shellescape(<q-args>), 1, <bang>0)

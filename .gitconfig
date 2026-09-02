@@ -1,7 +1,7 @@
 [i18n]
 	filesEncoding = utf-8
 [core]
-	editor = SublimeText -w --multiinstance
+	editor = vim
 	autocrlf = False
 [merge]
 	tool = kdiff3
@@ -11,6 +11,15 @@
 	path = /Applications/kdiff3.app/Contents/MacOS/kdiff3
 [push]
 	default = simple
+	autoSetupRemote = true
 [user]
 	email = john@magnusson.gl
-	name = John M
+	name = JoMa
+[pull]
+	rebase = false
+[credential "https://github.com"]
+	helper = 
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !gh auth git-credential
