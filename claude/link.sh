@@ -24,7 +24,19 @@ link() { # <src-relative-to-here> <dest-relative-to-~/.claude>
   local src="$HERE/$1" dest="$CLAUDE_DIR/$2"
   [ -e "$src" ] || { warn "missing $1 — skipped"; return 0; }
   mkdir -p "$(dirname "$dest")"
+  # `ln -sfn` replaces a symlink, but DESCENDS INTO a real directory and creates
+  # the link inside it — silently leaving the real dir in place and unmanaged.
+  # Move any real file/dir aside first so the link always lands where intended.
+  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+    local stash
+    stash="$CLAUDE_DIR/backups/replaced-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$stash/$(dirname "$2")"
+    mv "$dest" "$stash/$2"
+    warn "replaced real $2 (saved to backups/$(basename "$stash")/$2)"
+  fi
   ln -sfn "$src" "$dest"
+  # Prove the link resolves — a dangling link is worse than no link.
+  [ -e "$dest" ] || { warn "$2 links to a missing target"; return 1; }
   ok ".claude/$2"
 }
 
