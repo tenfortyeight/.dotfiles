@@ -13,22 +13,22 @@
 .env
 .env.*
 
-# Claude Code — ONLY claude/ (portable config) is tracked. Everything below is
-# machine-local and, in several cases, confidential: transcripts and history
-# contain employer work product, memory/ holds personal notes. This repo is
-# public — deny by default so a stray `git add -A` cannot publish them.
-claude/projects/
-claude/memory/
-claude/history.jsonl
-claude/settings.local.json
-claude/backups/
-claude/file-history/
-claude/sessions/
-claude/teams/
-claude/jobs/
-claude/uploads/
-claude/shell-snapshots/
-claude/daemon.log
-claude/*cache*
-claude/.credentials*
+# Claude Code — ALLOW-LIST, not a deny-list. ~/.claude holds transcripts, typed
+# history, per-project memory, caches and machine-local settings: employer work
+# product and personal notes. This repo is public, so everything under claude/ is
+# ignored by default and only the portable config is re-admitted below. A
+# deny-list cannot anticipate new files (a settings.json.bak-* slipped through one).
+claude/*
+!claude/CLAUDE.md
+!claude/README.md
+!claude/settings.json
+!claude/link.sh
+!claude/hooks/
+!claude/skills/
+!claude/agents/
+
+# ...and re-exclude anything that must never ship even inside those dirs.
+claude/**/*.bak*
+claude/**/*.local.json
 claude/hooks/peon-ping/
+claude/**/.credentials*
