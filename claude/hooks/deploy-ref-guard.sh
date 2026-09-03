@@ -10,19 +10,20 @@
 # Exit 2 + stderr = blocked, message fed back to Claude.
 set -uo pipefail
 
-raw="${CLAUDE_TOOL_INPUT:-}"
-if [ -z "$raw" ] && [ ! -t 0 ]; then raw="$(cat 2>/dev/null || true)"; fi
-[ -z "$raw" ] && exit 0
-
-cmd=""
-if command -v jq >/dev/null 2>&1; then
-  cmd="$(printf '%s' "$raw" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
+if ! command -v jq >/dev/null 2>&1; then
+  # Say so rather than no-op silently: a guard that quietly enforces nothing is
+  # worse than no guard, because it still looks configured.
+  echo "WARNING (deploy-ref-guard): jq not found — deploy ref parity is NOT being enforced." >&2
+  exit 0
 fi
-[ -z "$cmd" ] && cmd="$raw"
+
+payload="$(cat 2>/dev/null || true)"
+cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
+[ -z "$cmd" ] && exit 0
 
 # Universal, employer-neutral deploy verbs. A repo adds its own entrypoints via
 # .claude/deploy-commands rather than by editing this file.
-DEPLOY_RE='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|rollout|patch|scale)|terraform[[:space:]]+apply|helm[[:space:]]+(upgrade|install)|gh[[:space:]]+pr[[:space:]]+merge|aws[[:space:]]+eks[[:space:]]+update)'
+DEPLOY_RE='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|rollout|patch|scale)|terraform[[:space:]]+apply|helm[[:space:]]+(upgrade|install)|gh[[:space:]]+pr[[:space:]]+merge|aws[[:space:]]+eks[[:space:]]+update'
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 if [ -n "$repo_root" ] && [ -f "$repo_root/.claude/deploy-commands" ]; then
@@ -30,7 +31,15 @@ if [ -n "$repo_root" ] && [ -f "$repo_root/.claude/deploy-commands" ]; then
   [ -n "$extra" ] && DEPLOY_RE="$DEPLOY_RE|$extra"
 fi
 
-printf '%s' "$cmd" | grep -qE "$DEPLOY_RE" || exit 0
+printf '%s' "$cmd" | grep -qE "$DEPLOY_RE"
+rc=$?
+# grep exits 0=match, 1=no-match, 2=error (e.g. a malformed repo-supplied pattern).
+# Treating 2 as "no match" would fail OPEN and wave a real deploy through.
+case "$rc" in
+  0) ;;
+  1) exit 0 ;;
+  *) echo "BLOCK (deploy guard): deploy pattern failed to compile (grep exit $rc). Refusing to run a deploy-shaped command behind a broken guard — check .claude/deploy-commands." >&2; exit 2 ;;
+esac
 
 # Deliberately NOT the same marker as the permission hook's "# APPROVED".
 printf '%s' "$cmd" | grep -qE '(# REF-OVERRIDE|DEPLOY_REF_OVERRIDE=1)' && exit 0
