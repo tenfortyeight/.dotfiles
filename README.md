@@ -14,8 +14,24 @@ cd ~/dotfiles
 
 `install.sh` is idempotent — re-run it any time. It installs Homebrew if it is
 missing, applies the `Brewfile`, sets up oh-my-zsh and powerlevel10k, symlinks
-everything into `$HOME`, and generates an ed25519 SSH key if there isn't one
-(copying the public half to the clipboard).
+everything into `$HOME`, generates an ed25519 SSH key if there isn't one
+(copying the public half to the clipboard), and logs in to `gh`.
+
+If the machine will pull private packages from a registry, `gh` needs scopes
+beyond its defaults of `repo`, `read:org` and `gist`. Pass them in rather than
+committing them here — which registry and which scopes is job-specific, and
+naming either would tie this repo to an employer:
+
+```sh
+GH_SCOPES=read:packages ./install.sh
+```
+
+Which extra scopes a given machine actually needed is recorded in that
+machine's own [machine-local files](#machine-local-config), not in this repo.
+Those files are deliberately not backed up anywhere, so treat this as the only
+reminder that the step exists — if a private install 401s or 404s on a new
+machine, a missing scope is the first thing to check, and `gh auth refresh -s
+<scope>` adds one without redoing the login.
 
 Then open a new terminal and do the three things below that no script can.
 
