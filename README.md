@@ -1,8 +1,14 @@
 # dotfiles
 
-zsh + oh-my-zsh + powerlevel10k, vim, git, and the handful of apps I want on a
-Mac. Everything here is public, so nothing machine- or job-specific lives in it
-— see [Machine-local config](#machine-local-config) for where that goes.
+zsh + oh-my-zsh + powerlevel10k, vim, git, Claude Code, and the handful of apps I
+want on a Mac. Everything here is public, so nothing machine- or job-specific
+lives in it — see [Machine-local config](#machine-local-config) for where that
+goes.
+
+[`claude/`](claude/) holds the portable half of `~/.claude`: global engineering
+instructions, nine enforcement hooks, four skills and four agents. Transcripts,
+history and per-project memory stay machine-local and gitignored. See
+[claude/README.md](claude/README.md).
 
 ## Bootstrap a new Mac
 

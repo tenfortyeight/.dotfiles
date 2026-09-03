@@ -102,6 +102,14 @@ for file in .zshrc .zprofile .bashrc .bash_profile .gitconfig .gitignore .vimrc 
   ok "~/$file"
 done
 
+# --- Claude Code -----------------------------------------------------------
+# Only the portable config is linked (CLAUDE.md, settings, hooks, skills,
+# agents). Transcripts, history and per-project memory stay machine-local and
+# are gitignored — see claude/link.sh for the explicit list.
+if [ -x "$DOTFILES_DIR/claude/link.sh" ]; then
+  "$DOTFILES_DIR/claude/link.sh"
+fi
+
 # --- nvm --------------------------------------------------------------------
 # Homebrew installs nvm.sh into the brew prefix but does NOT create $NVM_DIR,
 # and nvm refuses to work without it. .zshrc sources nvm.sh from either location.
