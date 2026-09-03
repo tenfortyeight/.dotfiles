@@ -23,7 +23,7 @@ user-invocable: true
 
 Use this when starting or in the middle of bug/behavior work. Drives **one** cycle. Ask the user to invoke again for the next slice.
 
-See the `feedback_tdd_cycle.md` memory for full rationale.
+Rationale: tight cycles keep each commit reviewable and give design feedback early.
 
 ### Cycle steps
 
@@ -139,4 +139,4 @@ No preamble. If the file is absent, say nothing and end the chain at step 5.
 - No deploys (`kubectl apply`, `terraform apply`, `helm`, project-specific deploy CLIs, etc.).
 - No `gh pr merge`, `git push --force`, or tag pushes.
 - No silent fixes — every non-trivial change must show up in the report.
-- No skipping the TDD cycle. Tests, code, and refactors are not batched at the end. See `feedback_tdd_cycle.md`.
+- No skipping the TDD cycle. Tests, code, and refactors are not batched at the end.

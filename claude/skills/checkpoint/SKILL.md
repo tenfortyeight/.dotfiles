@@ -25,7 +25,7 @@ Suggest, don't auto-run — the user decides.
 
 ## What to write
 
-Write to `.claude/checkpoints/YYYY-MM-DD-<short-topic>.md` (relative to the current working repo, not `~/.claude/`). If `.claude/checkpoints/` doesn't exist, create it. Use a short kebab-case topic (e.g. `forge-chat-migration`, `issue-58-quality-baseline`).
+Write to `.claude/checkpoints/YYYY-MM-DD-<short-topic>.md` (relative to the current working repo, not `~/.claude/`). If `.claude/checkpoints/` doesn't exist, create it. Use a short kebab-case topic (e.g. `auth-refactor`, `issue-42-flaky-tests`).
 
 The file must be self-contained — readable by a fresh session with **zero** prior context.
 
