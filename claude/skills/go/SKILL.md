@@ -13,7 +13,7 @@ user-invocable: true
 `/go` has two modes. Pick the one that matches where the user is in the work:
 
 - **Inner loop** (`/go tdd` or starting bug/behavior work) — drives one red→green→refactor→commit cycle.
-- **Outer chain** (`/go`, default) — finishing chain that runs verify → simplify → review → commit → optional PR → DM.
+- **Outer chain** (`/go`, default) — finishing chain that runs verify → simplify → review → adversarial verify → commit → optional PR → optional notify.
 
 **Never deploys. Never merges PRs. Never force-pushes.** Those require explicit user permission per the deploy-permission memory.
 
@@ -117,8 +117,9 @@ When creating a PR: short title (≤70 chars), body with Summary + Test plan. Us
 Skip this step unless the current repo declares a notification target — this skill stays
 workspace-neutral so it ports between machines and employers unchanged.
 
-If `.claude/notify` exists in the repo root, read it and follow it. Expected shape:
-a channel (e.g. `slack`) and a target id, one per line. Send a 3–5 line summary:
+If `.claude/notify` exists in the repo root, read it and follow it. Shape: blank lines
+and `#` comments are ignored; the first two remaining lines are a channel (e.g. `slack`)
+and a target id. Send a 3–5 line summary:
 - What was changed (one line)
 - Verify / review / verifier outcomes
 - Commits made, PR link if created
