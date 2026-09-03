@@ -12,3 +12,23 @@
 .zshrc.local
 .env
 .env.*
+
+# Claude Code — ONLY claude/ (portable config) is tracked. Everything below is
+# machine-local and, in several cases, confidential: transcripts and history
+# contain employer work product, memory/ holds personal notes. This repo is
+# public — deny by default so a stray `git add -A` cannot publish them.
+claude/projects/
+claude/memory/
+claude/history.jsonl
+claude/settings.local.json
+claude/backups/
+claude/file-history/
+claude/sessions/
+claude/teams/
+claude/jobs/
+claude/uploads/
+claude/shell-snapshots/
+claude/daemon.log
+claude/*cache*
+claude/.credentials*
+claude/hooks/peon-ping/
