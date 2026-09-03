@@ -67,6 +67,9 @@ cask "font-meslo-lg-nerd-font"
 cask "docker-desktop"               # also provides the built-in Kubernetes
 cask "gcloud-cli"                   # .zshrc sources its path/completion from the brew prefix
 cask "rectangle"                    # window snapping via keyboard shortcuts
+cask "visual-studio-code"           # also puts the `code` CLI on PATH; $EDITOR stays vim
+cask "firefox"
+cask "google-chrome"
 cask "claude"                       # Anthropic's desktop app
 cask "claude-code"                  # the CLI
 cask "aldente"                      # cap the battery charge percentage
