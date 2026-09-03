@@ -152,5 +152,41 @@ else
   ok "already present"
 fi
 
+# --- GitHub CLI ------------------------------------------------------------
+# .gitconfig delegates git credentials to `gh auth git-credential`, so until gh
+# is logged in every authenticated fetch and push fails. Doing it here means
+# that is not something you find out on your first push.
+#
+# Deliberately after the SSH key step: `--git-protocol ssh` makes gh offer to
+# upload a public key, and it can only offer the one that exists by then.
+#
+# The login is a browser device flow and cannot be automated, so it is skipped
+# when there is no terminal to prompt on — that keeps this script re-runnable
+# unattended, the same reason oh-my-zsh is installed with RUNZSH=no.
+#
+# Extra scopes beyond gh's defaults (repo, read:org, gist) are job-specific, so
+# they are not hardcoded here. Pass them in when you need them:
+#
+#   GH_SCOPES=read:packages ./install.sh
+#
+info "GitHub CLI"
+if ! have gh; then
+  warn "gh not installed — check the Brewfile step above"
+elif gh auth status >/dev/null 2>&1; then
+  ok "already authenticated as $(gh api user --jq .login 2>/dev/null || echo 'unknown')"
+elif [ -t 0 ]; then
+  # An array, so a value with a space cannot split into stray arguments, and an
+  # `if` rather than `[ ... ] && ...` because a false test at statement level is
+  # a non-zero exit and `set -e` would take the whole script down with it.
+  gh_login_args=(--hostname github.com --git-protocol ssh)
+  if [ -n "${GH_SCOPES:-}" ]; then
+    gh_login_args+=(--scopes "$GH_SCOPES")
+  fi
+  gh auth login "${gh_login_args[@]}"
+  ok "authenticated"
+else
+  warn "not authenticated, and no terminal to prompt on — run: gh auth login"
+fi
+
 printf '\n\033[32mDone.\033[0m Open a new terminal, then see the README for the few steps\n'
 printf 'that cannot be automated (Nerd Font, Docker Desktop, Kubernetes).\n'
