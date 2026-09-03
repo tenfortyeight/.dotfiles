@@ -36,6 +36,14 @@ brew "node"
 brew "go"
 brew "bun"                          # .zshrc puts ~/.bun/bin on PATH and loads its completions
 
+# Python was previously present only because gcloud-cli depends on it, which
+# meant `brew uninstall gcloud-cli` would have taken the interpreter with it.
+# Declared here so it is installed on its own account. `python` is the alias for
+# the current python@3.x, so this tracks a supported version rather than pinning
+# one that will eventually go end-of-life.
+brew "python"
+brew "uv"                           # Python packaging/venv manager; also installs interpreters
+
 # ---------------------------------------------------------------------------
 # Infrastructure
 # ---------------------------------------------------------------------------
