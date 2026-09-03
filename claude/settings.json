@@ -1,0 +1,151 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "skillOverrides": {
+    "peon-ping-config": "off"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/post-edit-validate.sh",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/sops-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/deploy-permission-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/deploy-ref-guard.sh",
+            "timeout": 40
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/review-gate.sh",
+            "if": "Bash(gh pr create*)"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/aws-profile-guard.sh",
+            "if": "Bash(aws *)"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/commit-hygiene.sh",
+            "if": "Bash(git commit*)"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/terraform-push-reminder.sh",
+            "if": "Bash(git push*)",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/verifier-gate.sh",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/hooks/peon-ping/peon.sh\" ] && \"$HOME/.claude/hooks/peon-ping/peon.sh\" || true",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "if git rev-parse --git-dir >/dev/null 2>&1; then lines=$(git diff --shortstat 2>/dev/null | grep -oE '[0-9]+ insertion' | head -1 | grep -oE '[0-9]+' || echo 0); lines=${lines:-0}; if [ \"$lines\" -gt 60 ]; then echo \"\u26a0\ufe0f  Uncommitted diff is $lines+ lines. Commit in small, focused chunks \u2014 your CLAUDE.md says so.\"; fi; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/hooks/peon-ping/peon.sh\" ] && \"$HOME/.claude/hooks/peon-ping/peon.sh\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/hooks/peon-ping/peon.sh\" ] && \"$HOME/.claude/hooks/peon-ping/peon.sh\" || true",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "prompt=$(cat 2>/dev/null | jq -r '.prompt // \"\"' 2>/dev/null || echo \"\"); bug_tag=\"\"; if echo \"$prompt\" | grep -qiE '(bug|broken|failing|regress|doesn..?t work|not working|crash|error|fix|feature|implement|add support)'; then bug_tag=' \u00b7 TDD cycle: red (failing test pinning one slice) \u2192 green (minimum code) \u2192 refactor (run /simplify) \u2192 commit. Repeat per slice. Do NOT batch tests, fixes, or refactors at the end.'; fi; echo \"<claude-reminder>diagnose-before-fix (outline 2-3 approaches with tradeoffs for non-trivial work) \u00b7 no deploy/apply/merge without explicit user permission \u00b7 commit in small focused chunks, oneliner messages${bug_tag}</claude-reminder>\"",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/hooks/peon-ping/peon.sh\" ] && \"$HOME/.claude/hooks/peon-ping/peon.sh\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -x \"$HOME/.claude/hooks/peon-ping/peon.sh\" ] && \"$HOME/.claude/hooks/peon-ping/peon.sh\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "cleanupPeriodDays": 90,
+  "effortLevel": "xhigh",
+  "theme": "dark-daltonized",
+  "agentPushNotifEnabled": true
+}
