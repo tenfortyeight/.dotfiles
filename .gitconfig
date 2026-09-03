@@ -23,3 +23,11 @@
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !gh auth git-credential
+# Machine-local git config — a per-job identity, work-only credential helpers,
+# anything that should not be in a public repo. Not committed; see README.
+#
+# Last, so it wins: git resolves a repeated key to the last value it reads, so
+# an [user] block in the included file overrides the one above. A missing file
+# is not an error, so this is safe on a machine that has no local config.
+[include]
+	path = ~/.gitconfig.local
