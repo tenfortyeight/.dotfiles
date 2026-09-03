@@ -5,6 +5,21 @@
 # Safe to re-run — brew skips what is already present. Add to it freely; this
 # file is meant to be edited by hand, not generated.
 
+# Adopt, rather than refuse, an app that is already in /Applications.
+#
+# Applies to every cask below, so nothing here needs a per-app special case. By
+# default a cask refuses to install over an app Homebrew did not put there —
+# anything installed by hand from a .dmg, or deployed by MDM — and one such
+# refusal is enough to make the whole bundle exit non-zero. Adopting takes the
+# existing app under management instead, leaving the bundle green.
+#
+# Adoption still cannot touch a bundle owned by root: it runs a `chmod -R a+rX`
+# through sudo, which fails wherever there is no terminal to prompt on. That is
+# not fatal either — install.sh treats a failed entry as a warning and reports
+# what is still unmet, because an app that is already installed and working
+# does not need Homebrew's blessing to be usable.
+cask_args adopt: true
+
 # ---------------------------------------------------------------------------
 # Shell
 # ---------------------------------------------------------------------------

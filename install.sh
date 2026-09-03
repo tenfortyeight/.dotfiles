@@ -32,9 +32,27 @@ have brew || { echo "brew still not on PATH — install it manually and re-run" 
 ok "brew $(brew --version | head -1 | cut -d' ' -f2)"
 
 # --- Packages --------------------------------------------------------------
+# `brew bundle` installs everything it can and then exits non-zero if any one
+# entry failed. It is that exit status, not brew giving up, that matters here:
+# under `set -e` it would end the bootstrap at this line — before oh-my-zsh,
+# the symlinks, or anything else. The Brewfile already adopts pre-existing apps
+# (see `cask_args` there) rather than refusing them, which handles most of it.
+#
+# What adoption cannot handle is an app bundle owned by root, as MDM-deployed
+# ones are: it shells out to `sudo chmod`, which fails wherever there is no
+# terminal to prompt on. That app is installed and working; only Homebrew's
+# record of it is missing, and stopping the bootstrap over it is the wrong
+# trade. So a failure here warns and continues, then says exactly what is still
+# unmet instead of leaving it buried in the scrollback.
 info "Packages (Brewfile)"
-brew bundle --file="$DOTFILES_DIR/Brewfile"
-ok "Brewfile applied"
+if brew bundle --file="$DOTFILES_DIR/Brewfile"; then
+  ok "Brewfile applied"
+else
+  warn "some entries did not install — the bootstrap continues"
+  brew bundle check --verbose --file="$DOTFILES_DIR/Brewfile" 2>&1 \
+    | sed 's/^/    /' || true
+  warn "install anything above by hand if you want brew to manage it"
+fi
 
 # --- oh-my-zsh -------------------------------------------------------------
 # RUNZSH/CHSH keep the installer from starting a shell or prompting, which is
