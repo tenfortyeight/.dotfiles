@@ -5,8 +5,9 @@
 #   ./install.sh
 #
 # It installs Homebrew if missing, runs the Brewfile, sets up oh-my-zsh and
-# powerlevel10k, symlinks the dotfiles into $HOME, and generates an SSH key if
-# there isn't one. Everything it cannot do for you is listed in the README.
+# powerlevel10k, symlinks the dotfiles into $HOME, links the portable Claude Code
+# config from claude/, generates an SSH key if there isn't one, and logs in to gh.
+# Everything it cannot do for you is listed in the README.
 
 set -euo pipefail
 

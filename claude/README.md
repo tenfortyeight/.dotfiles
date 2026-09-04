@@ -50,9 +50,11 @@ The guards stay generic; a repo declares its own particulars:
 
 ## Requirements
 
-`jq` is required — every hook parses its payload with it. The two deploy guards say
-so loudly on stderr if it is missing rather than no-opping silently; the others do
-go quiet, so check for it first if a hook seems inert.
+`jq` is required — every hook parses its payload with it. Without it the two deploy
+guards and `verifier-gate` warn on stderr and stand down; the remaining six go
+quiet, so check for `jq` first if a hook seems inert. `verifier-gate` stands down
+rather than blocking because its loop guard reads `stop_hook_active` through `jq`,
+and a Stop hook that cannot read that flag could block repeatedly.
 
 `jq`, `shellcheck` and `yamllint` are in the `Brewfile`. `terraform` and `kustomize`
 are **not** — `post-edit-validate` skips whichever validators are absent, so install

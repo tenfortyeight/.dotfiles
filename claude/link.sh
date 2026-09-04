@@ -59,8 +59,9 @@ for a in nodejs-backend-expert nodejs-domain-integrator \
   link "agents/$a.md" "agents/$a.md"
 done
 
-# peon-ping is a Homebrew formula (see Brewfile), not tracked here. The hook
-# entries tolerate its absence, so nothing breaks if it is not installed.
+# peon-ping is installed out of band (a Homebrew formula, but NOT declared in this
+# repo's Brewfile) and is not tracked here. The hook entries tolerate its absence,
+# so nothing breaks on a machine without it.
 have() { command -v "$1" >/dev/null 2>&1; }
 have jq || warn "jq not found — every hook reads its payload with jq and will no-op without it"
 have shellcheck || warn "shellcheck not found — the PostToolUse shell validator will be silent"
