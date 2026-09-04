@@ -11,6 +11,14 @@
 # receipt stops it re-firing on later turns for the same commit.
 set -uo pipefail
 
+if ! command -v jq >/dev/null 2>&1; then
+  # Without jq the stop_hook_active flag below can never read "true", so the
+  # once-per-stop-chain loop guard would be defeated and this hook could block
+  # repeatedly. Stand down loudly rather than block blind.
+  echo "WARNING (verifier-gate): jq not found — verification gating is disabled." >&2
+  exit 0
+fi
+
 payload="$(cat 2>/dev/null || true)"
 [ "$(printf '%s' "$payload" | jq -r '.stop_hook_active // false' 2>/dev/null)" = "true" ] && exit 0
 
