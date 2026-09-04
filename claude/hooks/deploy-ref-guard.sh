@@ -24,8 +24,11 @@ cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null
 # Universal, employer-neutral deploy verbs, each anchored to a command position so
 # that merely naming one (in a grep, a doc, a commit message) is not a deploy.
 # A repo adds its own entrypoints via .claude/deploy-commands, not by editing this.
-CMDPOS='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?(env[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
-VERBS='((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|rollout|patch|scale)|terraform[[:space:]]+apply|helm[[:space:]]+(upgrade|install)|gh[[:space:]]+pr[[:space:]]+merge|aws[[:space:]]+eks[[:space:]]+update'
+# sudo / env / VAR=value in any order; flags allowed between binary and verb.
+# Tokens exclude ; & | so a match can never span a command boundary.
+CMDPOS='(^|[;&|])[[:space:]]*((sudo|env)[[:space:]]+|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
+FLAGS='([[:space:]]+[^[:space:];&|]+)*'
+VERBS="((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl${FLAGS}[[:space:]]+(apply|rollout|patch|scale)|terraform${FLAGS}[[:space:]]+apply|helm${FLAGS}[[:space:]]+(upgrade|install)|gh${FLAGS}[[:space:]]+pr[[:space:]]+merge|aws${FLAGS}[[:space:]]+eks[[:space:]]+update"
 DEPLOY_RE="${CMDPOS}(${VERBS})"
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"

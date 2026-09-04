@@ -15,8 +15,14 @@ cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null
 # (AWS_PROFILE=prod kubectl ...) or an interpreter. Anchoring EVERY verb, not just
 # deploy.sh, is what stops `grep -r "terraform apply" .` and `echo "kubectl apply"`
 # from reading as deploys; those false positives blocked ordinary work.
-CMDPOS='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?(env[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
-VERBS='((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|delete|rollout|patch|create|scale|drain|uncordon|edit)|terraform[[:space:]]+(apply|destroy|taint|untaint|import)|helm[[:space:]]+(upgrade|install|uninstall|rollback)|gh[[:space:]]+pr[[:space:]]+merge|git[[:space:]]+push[[:space:]]+(--force|-f|--tags)|git[[:space:]]+tag[[:space:]]+-[^d]|aws[[:space:]]+eks[[:space:]]+update'
+# sudo / env / VAR=value may appear in any order and repeat.
+CMDPOS='(^|[;&|])[[:space:]]*((sudo|env)[[:space:]]+|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
+# Flags may sit between the binary and its verb — `kubectl --context=prod apply`.
+# CLAUDE.md mandates explicit --context/--profile flags, so a guard that required
+# the verb to follow the binary directly missed the very form it tells you to use.
+# Tokens cannot contain ; & |, so a match can never span a command boundary.
+FLAGS='([[:space:]]+[^[:space:];&|]+)*'
+VERBS="((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl${FLAGS}[[:space:]]+(apply|delete|rollout|patch|create|scale|drain|uncordon|edit)|terraform${FLAGS}[[:space:]]+(apply|destroy|taint|untaint|import)|helm${FLAGS}[[:space:]]+(upgrade|install|uninstall|rollback)|gh${FLAGS}[[:space:]]+pr[[:space:]]+merge|git[[:space:]]+push[[:space:]]+(--force|-f|--tags)|git[[:space:]]+tag[[:space:]]+-[^d]|aws${FLAGS}[[:space:]]+eks[[:space:]]+update"
 DEPLOY_RE="${CMDPOS}(${VERBS})"
 
 # Repo-declared entrypoints: one ERE per line in .claude/deploy-commands ("#" comments
