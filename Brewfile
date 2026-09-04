@@ -40,6 +40,11 @@ brew "ripgrep"                      # also backs the fzf and vim search commands
 brew "fzf"
 brew "jq"
 brew "coreutils"
+# Used by the Claude Code hooks in claude/hooks: jq parses every hook payload,
+# shellcheck and yamllint back the post-edit validator. Without them the hooks
+# degrade silently, which is the failure mode they exist to prevent.
+brew "shellcheck"
+brew "yamllint"
 
 # ---------------------------------------------------------------------------
 # Languages and runtimes

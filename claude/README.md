@@ -50,9 +50,13 @@ The guards stay generic; a repo declares its own particulars:
 
 ## Requirements
 
-`jq` is required — every hook parses its payload with it, and without it they all
-silently no-op. `shellcheck`, `yamllint`, `terraform` and `kustomize` are optional;
-`post-edit-validate` skips whatever is missing. All are in the `Brewfile`.
+`jq` is required — every hook parses its payload with it. The two deploy guards say
+so loudly on stderr if it is missing rather than no-opping silently; the others do
+go quiet, so check for it first if a hook seems inert.
+
+`jq`, `shellcheck` and `yamllint` are in the `Brewfile`. `terraform` and `kustomize`
+are **not** — `post-edit-validate` skips whichever validators are absent, so install
+them only if you work with those file types.
 
 `peon-ping` is a Homebrew formula, not tracked here. The hook entries that call it
 are guarded, so nothing breaks when it is absent.
