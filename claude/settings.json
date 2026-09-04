@@ -137,7 +137,7 @@
   },
   "cleanupPeriodDays": 90,
   "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "theme": "dark-daltonized",
   "agentPushNotifEnabled": true
 }
