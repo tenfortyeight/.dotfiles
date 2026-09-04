@@ -21,9 +21,12 @@ payload="$(cat 2>/dev/null || true)"
 cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
 [ -z "$cmd" ] && exit 0
 
-# Universal, employer-neutral deploy verbs. A repo adds its own entrypoints via
-# .claude/deploy-commands rather than by editing this file.
-DEPLOY_RE='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|rollout|patch|scale)|terraform[[:space:]]+apply|helm[[:space:]]+(upgrade|install)|gh[[:space:]]+pr[[:space:]]+merge|aws[[:space:]]+eks[[:space:]]+update'
+# Universal, employer-neutral deploy verbs, each anchored to a command position so
+# that merely naming one (in a grep, a doc, a commit message) is not a deploy.
+# A repo adds its own entrypoints via .claude/deploy-commands, not by editing this.
+CMDPOS='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
+VERBS='((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|rollout|patch|scale)|terraform[[:space:]]+apply|helm[[:space:]]+(upgrade|install)|gh[[:space:]]+pr[[:space:]]+merge|aws[[:space:]]+eks[[:space:]]+update'
+DEPLOY_RE="${CMDPOS}(${VERBS})"
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 if [ -n "$repo_root" ] && [ -f "$repo_root/.claude/deploy-commands" ]; then

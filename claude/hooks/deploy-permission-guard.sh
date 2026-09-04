@@ -11,9 +11,13 @@ cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null
 [ -z "$cmd" ] && exit 0
 
 # Universal, employer-neutral deploy verbs only. A deploy script counts at COMMAND
-# POSITION (line start, or after ; & | &&, optionally via sudo/bash/sh) — otherwise
-# `sed -n 1,50p scripts/deploy.sh`, merely READING it, reads as a deploy.
-DEPLOY_RE='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|delete|rollout|patch|create|scale|drain|uncordon|edit)|terraform[[:space:]]+(apply|destroy|taint|untaint|import)|helm[[:space:]]+(upgrade|install|uninstall|rollback)|gh[[:space:]]+pr[[:space:]]+merge|git[[:space:]]+push[[:space:]]+(--force|-f|--tags)|git[[:space:]]+tag[[:space:]]+-[^d]|aws[[:space:]]+eks[[:space:]]+update'
+# POSITION — line start or after ; & |, optionally behind sudo, an env-var prefix
+# (AWS_PROFILE=prod kubectl ...) or an interpreter. Anchoring EVERY verb, not just
+# deploy.sh, is what stops `grep -r "terraform apply" .` and `echo "kubectl apply"`
+# from reading as deploys; those false positives blocked ordinary work.
+CMDPOS='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
+VERBS='((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|delete|rollout|patch|create|scale|drain|uncordon|edit)|terraform[[:space:]]+(apply|destroy|taint|untaint|import)|helm[[:space:]]+(upgrade|install|uninstall|rollback)|gh[[:space:]]+pr[[:space:]]+merge|git[[:space:]]+push[[:space:]]+(--force|-f|--tags)|git[[:space:]]+tag[[:space:]]+-[^d]|aws[[:space:]]+eks[[:space:]]+update'
+DEPLOY_RE="${CMDPOS}(${VERBS})"
 
 # Repo-declared entrypoints: one ERE per line in .claude/deploy-commands ("#" comments
 # and blank lines ignored). Keeps this hook generic — the repo owns its own specifics.
