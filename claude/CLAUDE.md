@@ -108,6 +108,8 @@ Run `/verify` — it routes YAML, Terraform, shell, JS/TS and GitHub-workflow va
 
 ## Git Workflow
 
+**Fetch before you start — MANDATORY.** The first action in any repo, before editing or committing anything, is `git fetch origin` and a comparison of `HEAD` against `origin/<default-branch>`. If behind, reconcile *first*. Several sessions and terminals run against these repos at once, so origin moves while you work — that is also why worktrees exist here. Checking remote state only before pushing is too late: it turns a one-command update into a merge of everything built on a stale base. Re-fetch before pushing too; a long session goes stale mid-flight.
+
 Commit early and often in appropriate chunks so history is reviewable. Use oneliner commit messages.
 
 **Never** push git tags, trigger releases/publishes, or run irreversible git operations (force push, reset --hard) without explicit user permission.
