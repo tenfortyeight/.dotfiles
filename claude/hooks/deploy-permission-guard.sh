@@ -15,7 +15,7 @@ cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null
 # (AWS_PROFILE=prod kubectl ...) or an interpreter. Anchoring EVERY verb, not just
 # deploy.sh, is what stops `grep -r "terraform apply" .` and `echo "kubectl apply"`
 # from reading as deploys; those false positives blocked ordinary work.
-CMDPOS='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
+CMDPOS='(^|[;&|])[[:space:]]*(sudo[[:space:]]+)?(env[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
 VERBS='((bash|sh|zsh)[[:space:]]+)?(\./)?([A-Za-z0-9_./-]*/)?deploy\.sh|kubectl[[:space:]]+(apply|delete|rollout|patch|create|scale|drain|uncordon|edit)|terraform[[:space:]]+(apply|destroy|taint|untaint|import)|helm[[:space:]]+(upgrade|install|uninstall|rollback)|gh[[:space:]]+pr[[:space:]]+merge|git[[:space:]]+push[[:space:]]+(--force|-f|--tags)|git[[:space:]]+tag[[:space:]]+-[^d]|aws[[:space:]]+eks[[:space:]]+update'
 DEPLOY_RE="${CMDPOS}(${VERBS})"
 

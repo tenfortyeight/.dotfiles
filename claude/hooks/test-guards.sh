@@ -55,6 +55,8 @@ echo "== permission guard: prefixed invocations still count =="
 check 2 "$PERM" 'AWS_PROFILE=prod kubectl apply -f x.yaml'
 check 2 "$PERM" 'sudo kubectl apply -f x.yaml'
 check 2 "$PERM" 'cd /infra && terraform apply'
+check 2 "$PERM" 'env AWS_PROFILE=prod kubectl apply -f x.yaml'
+check 2 "$PERM" 'sudo env KUBECONFIG=/tmp/k kubectl apply -f x.yaml'
 
 echo "== ref guard: only deploy what is on origin =="
 # Run in-process rather than a subshell so the counters are a single set — a
