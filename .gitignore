@@ -8,8 +8,15 @@
 
 # Machine-local config — job-specific paths, secrets, per-machine overrides.
 # See README.md.
+#
+# These files live in $HOME rather than in this repo, so none of them can be
+# committed by accident today. The patterns are here so that stays true if one
+# is ever moved or copied in — .npmrc especially, which is the conventional
+# place for a registry token.
 *.local
 .zshrc.local
+.gitconfig.work
+.npmrc
 .env
 .env.*
 

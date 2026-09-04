@@ -32,9 +32,27 @@ have brew || { echo "brew still not on PATH — install it manually and re-run" 
 ok "brew $(brew --version | head -1 | cut -d' ' -f2)"
 
 # --- Packages --------------------------------------------------------------
+# `brew bundle` installs everything it can and then exits non-zero if any one
+# entry failed. It is that exit status, not brew giving up, that matters here:
+# under `set -e` it would end the bootstrap at this line — before oh-my-zsh,
+# the symlinks, or anything else. The Brewfile already adopts pre-existing apps
+# (see `cask_args` there) rather than refusing them, which handles most of it.
+#
+# What adoption cannot handle is an app bundle owned by root, as MDM-deployed
+# ones are: it shells out to `sudo chmod`, which fails wherever there is no
+# terminal to prompt on. That app is installed and working; only Homebrew's
+# record of it is missing, and stopping the bootstrap over it is the wrong
+# trade. So a failure here warns and continues, then says exactly what is still
+# unmet instead of leaving it buried in the scrollback.
 info "Packages (Brewfile)"
-brew bundle --file="$DOTFILES_DIR/Brewfile"
-ok "Brewfile applied"
+if brew bundle --file="$DOTFILES_DIR/Brewfile"; then
+  ok "Brewfile applied"
+else
+  warn "some entries did not install — the bootstrap continues"
+  brew bundle check --verbose --file="$DOTFILES_DIR/Brewfile" 2>&1 \
+    | sed 's/^/    /' || true
+  warn "install anything above by hand if you want brew to manage it"
+fi
 
 # --- oh-my-zsh -------------------------------------------------------------
 # RUNZSH/CHSH keep the installer from starting a shell or prompting, which is
@@ -158,6 +176,42 @@ if [ ! -f "$SSH_KEY" ]; then
   warn "add it at https://github.com/settings/keys"
 else
   ok "already present"
+fi
+
+# --- GitHub CLI ------------------------------------------------------------
+# .gitconfig delegates git credentials to `gh auth git-credential`, so until gh
+# is logged in every authenticated fetch and push fails. Doing it here means
+# that is not something you find out on your first push.
+#
+# Deliberately after the SSH key step: `--git-protocol ssh` makes gh offer to
+# upload a public key, and it can only offer the one that exists by then.
+#
+# The login is a browser device flow and cannot be automated, so it is skipped
+# when there is no terminal to prompt on — that keeps this script re-runnable
+# unattended, the same reason oh-my-zsh is installed with RUNZSH=no.
+#
+# Extra scopes beyond gh's defaults (repo, read:org, gist) are job-specific, so
+# they are not hardcoded here. Pass them in when you need them:
+#
+#   GH_SCOPES=read:packages ./install.sh
+#
+info "GitHub CLI"
+if ! have gh; then
+  warn "gh not installed — check the Brewfile step above"
+elif gh auth status >/dev/null 2>&1; then
+  ok "already authenticated as $(gh api user --jq .login 2>/dev/null || echo 'unknown')"
+elif [ -t 0 ]; then
+  # An array, so a value with a space cannot split into stray arguments, and an
+  # `if` rather than `[ ... ] && ...` because a false test at statement level is
+  # a non-zero exit and `set -e` would take the whole script down with it.
+  gh_login_args=(--hostname github.com --git-protocol ssh)
+  if [ -n "${GH_SCOPES:-}" ]; then
+    gh_login_args+=(--scopes "$GH_SCOPES")
+  fi
+  gh auth login "${gh_login_args[@]}"
+  ok "authenticated"
+else
+  warn "not authenticated, and no terminal to prompt on — run: gh auth login"
 fi
 
 printf '\n\033[32mDone.\033[0m Open a new terminal, then see the README for the few steps\n'

@@ -5,6 +5,21 @@
 # Safe to re-run — brew skips what is already present. Add to it freely; this
 # file is meant to be edited by hand, not generated.
 
+# Adopt, rather than refuse, an app that is already in /Applications.
+#
+# Applies to every cask below, so nothing here needs a per-app special case. By
+# default a cask refuses to install over an app Homebrew did not put there —
+# anything installed by hand from a .dmg, or deployed by MDM — and one such
+# refusal is enough to make the whole bundle exit non-zero. Adopting takes the
+# existing app under management instead, leaving the bundle green.
+#
+# Adoption still cannot touch a bundle owned by root: it runs a `chmod -R a+rX`
+# through sudo, which fails wherever there is no terminal to prompt on. That is
+# not fatal either — install.sh treats a failed entry as a warning and reports
+# what is still unmet, because an app that is already installed and working
+# does not need Homebrew's blessing to be usable.
+cask_args adopt: true
+
 # ---------------------------------------------------------------------------
 # Shell
 # ---------------------------------------------------------------------------
@@ -36,6 +51,14 @@ brew "node"
 brew "go"
 brew "bun"                          # .zshrc puts ~/.bun/bin on PATH and loads its completions
 
+# Python was previously present only because gcloud-cli depends on it, which
+# meant `brew uninstall gcloud-cli` would have taken the interpreter with it.
+# Declared here so it is installed on its own account. `python` is the alias for
+# the current python@3.x, so this tracks a supported version rather than pinning
+# one that will eventually go end-of-life.
+brew "python"
+brew "uv"                           # Python packaging/venv manager; also installs interpreters
+
 # ---------------------------------------------------------------------------
 # Infrastructure
 # ---------------------------------------------------------------------------
@@ -59,6 +82,9 @@ cask "font-meslo-lg-nerd-font"
 cask "docker-desktop"               # also provides the built-in Kubernetes
 cask "gcloud-cli"                   # .zshrc sources its path/completion from the brew prefix
 cask "rectangle"                    # window snapping via keyboard shortcuts
+cask "visual-studio-code"           # also puts the `code` CLI on PATH; $EDITOR stays vim
+cask "firefox"
+cask "google-chrome"
 cask "claude"                       # Anthropic's desktop app
 cask "claude-code"                  # the CLI
 cask "aldente"                      # cap the battery charge percentage

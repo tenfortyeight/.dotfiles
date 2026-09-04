@@ -20,8 +20,24 @@ cd ~/dotfiles
 
 `install.sh` is idempotent — re-run it any time. It installs Homebrew if it is
 missing, applies the `Brewfile`, sets up oh-my-zsh and powerlevel10k, symlinks
-everything into `$HOME`, and generates an ed25519 SSH key if there isn't one
-(copying the public half to the clipboard).
+everything into `$HOME`, generates an ed25519 SSH key if there isn't one
+(copying the public half to the clipboard), and logs in to `gh`.
+
+If the machine will pull private packages from a registry, `gh` needs scopes
+beyond its defaults of `repo`, `read:org` and `gist`. Pass them in rather than
+committing them here — which registry and which scopes is job-specific, and
+naming either would tie this repo to an employer:
+
+```sh
+GH_SCOPES=read:packages ./install.sh
+```
+
+Which extra scopes a given machine actually needed is recorded in that
+machine's own [machine-local files](#machine-local-config), not in this repo.
+Those files are deliberately not backed up anywhere, so treat this as the only
+reminder that the step exists — if a private install 401s or 404s on a new
+machine, a missing scope is the first thing to check, and `gh auth refresh -s
+<scope>` adds one without redoing the login.
 
 Then open a new terminal and do the three things below that no script can.
 
@@ -54,13 +70,37 @@ committed here, so the prompt should already look right.
 
 ## Machine-local config
 
-Anything specific to one machine or one job goes in `~/.zshrc.local`, which
-`.zshrc` sources last (so it wins) and `.gitignore` excludes. Employer tooling,
-work-only `PATH` entries, client credentials helpers — all of it belongs there,
-never in this repo.
+**This repo is public.** Nothing that identifies an employer, a client, or an
+internal system belongs in it — not just credentials, but names too: private
+registry hostnames, package scopes, internal CLIs, service names, work
+directory paths. Any one of those is enough to tie this repo to a company.
 
-Secrets go in `~/.env` as `KEY=value` pairs. `.zshrc` exports them if the file
-exists and ignores it if not. Also gitignored, also never committed.
+Everything of that kind goes in a file under `$HOME` that this repo never
+tracks. `install.sh` does not create or symlink any of them, and each is
+optional — the shell and git both work with none of them present.
+
+| File | |
+|---|---|
+| `~/.zshrc.local` | shell config for this machine or this job: work-only `PATH` entries, per-employer CLI completions, tool env vars. `.zshrc` sources it **last**, so it can override anything above |
+| `~/.env` | secrets as `KEY=value` pairs. `.zshrc` exports the lot with `set -a` if the file exists |
+| `~/.gitconfig.local` | git config for this machine. `.gitconfig` includes it last, so a `[user]` block here overrides the personal identity. The right place for a `includeIf "gitdir:…"` that switches identity per work directory |
+| `~/.gitconfig.work` | the per-job identity itself, pulled in by the conditional include above |
+| `~/.npmrc` | private package scope → registry mappings, and the auth token for them |
+
+**Keep tokens out of files.** Where a tool reads `${VAR}` from the environment
+— `.npmrc` does — point it at a variable and export that from
+`~/.zshrc.local`, sourcing the value from a credential store rather than
+writing it down:
+
+```sh
+export SOME_TOKEN="$(gh auth token 2>/dev/null)"
+```
+
+The token then lives only in the macOS keychain. The cost is about 100 ms per
+interactive shell, and that the variable is absent in contexts that never
+source `~/.zshrc.local` — a `launchd` job, some IDE task runners — where the
+tool will fail to authenticate rather than fail obviously. Put the token
+literally in the file if you need it to work everywhere, and `chmod 600` it.
 
 ## What's here
 
@@ -69,7 +109,7 @@ exists and ignores it if not. Also gitignored, also never committed.
 | `.zprofile` | Homebrew shellenv — login shells only, so `.zshrc` can assume `brew` is on `PATH` |
 | `.zshrc` | shell config: oh-my-zsh, plugins, nvm, bun, fzf, gcloud, aliases |
 | `.p10k.zsh` | the prompt itself |
-| `.gitconfig` | identity, vim as editor, `gh` as the credential helper |
+| `.gitconfig` | identity, vim as editor, `gh` as the credential helper, and an include of `~/.gitconfig.local` |
 | `.vimrc` | vim-plug plugin set, fzf/ripgrep search bindings |
 | `.terraformrc` | shared provider plugin cache, so workspaces don't each download their own |
 | `.bashrc` / `.bash_profile` | minimal — bash is the fallback shell, not the daily one |
