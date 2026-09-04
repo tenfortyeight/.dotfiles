@@ -45,7 +45,7 @@ link settings.json settings.json
 
 for f in sops-guard deploy-permission-guard deploy-ref-guard review-gate \
          aws-profile-guard commit-hygiene terraform-push-reminder \
-         post-edit-validate verifier-gate test-guards; do
+         stale-base-guard post-edit-validate verifier-gate test-guards; do
   chmod +x "$HERE/hooks/$f.sh" 2>/dev/null || true
   link "hooks/$f.sh" "hooks/$f.sh"
 done

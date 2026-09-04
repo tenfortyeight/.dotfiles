@@ -61,6 +61,12 @@
           },
           {
             "type": "command",
+            "command": "$HOME/.claude/hooks/stale-base-guard.sh",
+            "if": "Bash(git commit*)",
+            "timeout": 20
+          },
+          {
+            "type": "command",
             "command": "$HOME/.claude/hooks/terraform-push-reminder.sh",
             "if": "Bash(git push*)",
             "timeout": 15
