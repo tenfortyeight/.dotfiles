@@ -57,6 +57,19 @@ check 2 "$PERM" 'sudo kubectl apply -f x.yaml'
 check 2 "$PERM" 'cd /infra && terraform apply'
 check 2 "$PERM" 'env AWS_PROFILE=prod kubectl apply -f x.yaml'
 check 2 "$PERM" 'sudo env KUBECONFIG=/tmp/k kubectl apply -f x.yaml'
+# Prefix parts may appear in any order, not just sudo -> env -> VAR=.
+check 2 "$PERM" 'KUBECONFIG=/tmp/k sudo kubectl apply -f x.yaml'
+
+echo "== permission guard: flags between the binary and the verb =="
+# CLAUDE.md mandates explicit --context/--profile flags, so the guard MUST see
+# through them; requiring the verb to follow the binary directly missed the exact
+# invocation form the instructions require.
+check 2 "$PERM" 'kubectl --context=prod apply -f x.yaml'
+check 2 "$PERM" 'kubectl --context prod apply -f x.yaml'
+check 2 "$PERM" 'kubectl -n payments apply -f x.yaml'
+check 2 "$PERM" 'helm --kube-context prod upgrade api ./chart'
+# ...but not across a command boundary: this is two commands, neither a deploy.
+check 0 "$PERM" 'kubectl get pods; echo apply'
 
 echo "== ref guard: only deploy what is on origin =="
 # Run in-process rather than a subshell so the counters are a single set — a
@@ -82,11 +95,11 @@ check 0 "$REF" './scripts/deploy.sh # REF-OVERRIDE' 'explicit override -> allowe
 
 echo "== repo-declared patterns =="
 mkdir -p .claude
-printf 'coolify-create-app\\.sh\n' > .claude/deploy-commands
-check 2 "$PERM" './scripts/coolify-create-app.sh' 'repo pattern -> blocked inside repo'
+printf 'example-create-app\\.sh\n' > .claude/deploy-commands
+check 2 "$PERM" './scripts/example-create-app.sh' 'repo pattern -> blocked inside repo'
 # A malformed repo pattern must fail CLOSED, not wave the deploy through.
-printf 'coolify-create-app(\n' > .claude/deploy-commands
-check 2 "$PERM" './scripts/coolify-create-app.sh' 'malformed repo pattern -> fails closed'
+printf 'example-create-app(\n' > .claude/deploy-commands
+check 2 "$PERM" './scripts/example-create-app.sh' 'malformed repo pattern -> fails closed'
 
 cd "$ORIG_PWD" || true
 rm -rf "$TMP"
