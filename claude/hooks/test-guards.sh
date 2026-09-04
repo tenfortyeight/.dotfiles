@@ -43,41 +43,51 @@ check 2 "$PERM" 'aws eks update-kubeconfig --name prod-cluster'
 check 2 "$PERM" 'aws eks update-nodegroup-version --cluster-name prod'
 check 0 "$PERM" './scripts/deploy.sh --only api # APPROVED'
 
+echo "== permission guard: MENTIONING a verb is not running it =="
+# These blocked ordinary work — grepping for a verb, documenting one, or feeding
+# one to a test harness all matched, because only deploy.sh was anchored to a
+# command position while the infra verbs matched anywhere in the string.
+check 0 "$PERM" 'grep -r "terraform app''ly" .'
+check 0 "$PERM" 'echo "kube''ctl apply -f x.yaml"'
+check 0 "$PERM" 'git commit -m "docs: note kube''ctl apply ordering"'
+
+echo "== permission guard: prefixed invocations still count =="
+check 2 "$PERM" 'AWS_PROFILE=prod kubectl apply -f x.yaml'
+check 2 "$PERM" 'sudo kubectl apply -f x.yaml'
+check 2 "$PERM" 'cd /infra && terraform apply'
+
 echo "== ref guard: only deploy what is on origin =="
+# Run in-process rather than a subshell so the counters are a single set — a
+# subshell's tallies are lost on exit, which is how an earlier version silently
+# reported the wrong totals and could not fail.
 TMP="$(mktemp -d)"
-(
-  cd "$TMP" || exit 1
-  git init -q --bare origin.git
-  git clone -q origin.git work 2>/dev/null
-  cd work || exit 1
-  git config user.email t@t; git config user.name t
-  echo one > a.txt; git add .; git commit -qm one
-  git branch -M main; git push -q origin main
-  git remote set-head origin main >/dev/null 2>&1
+ORIG_PWD="$PWD"
+git init -q --bare "$TMP/origin.git"
+git clone -q "$TMP/origin.git" "$TMP/work" 2>/dev/null
+cd "$TMP/work" || { echo "  FAIL: could not set up throwaway repo"; exit 1; }
+git config user.email t@t; git config user.name t
+echo one > a.txt; git add .; git commit -qm one
+git branch -M main; git push -q origin main
+git remote set-head origin main >/dev/null 2>&1
 
-  cd "$TMP/work" || exit 1
-  check 0 "$REF" './scripts/deploy.sh' 'synced + clean -> allowed'
-  echo dirt >> a.txt
-  check 2 "$REF" './scripts/deploy.sh' 'dirty tree -> blocked'
-  git checkout -q -- a.txt
-  echo two > b.txt; git add .; git commit -qm two
-  check 2 "$REF" './scripts/deploy.sh' 'unpushed commit -> blocked'
-  check 0 "$REF" './scripts/deploy.sh # REF-OVERRIDE' 'explicit override -> allowed'
+check 0 "$REF" './scripts/deploy.sh' 'synced + clean -> allowed'
+echo dirt >> a.txt
+check 2 "$REF" './scripts/deploy.sh' 'dirty tree -> blocked'
+git checkout -q -- a.txt
+echo two > b.txt; git add .; git commit -qm two
+check 2 "$REF" './scripts/deploy.sh' 'unpushed commit -> blocked'
+check 0 "$REF" './scripts/deploy.sh # REF-OVERRIDE' 'explicit override -> allowed'
 
-  echo "== repo-declared patterns =="
-  mkdir -p .claude
-  printf 'coolify-create-app\\.sh\n' > .claude/deploy-commands
-  check 2 "$PERM" './scripts/coolify-create-app.sh' 'repo pattern -> blocked inside repo'
-  # A malformed repo pattern must fail CLOSED, not wave the deploy through.
-  printf 'coolify-create-app(\n' > .claude/deploy-commands
-  check 2 "$PERM" './scripts/coolify-create-app.sh' 'malformed repo pattern -> fails closed'
-  rm -rf .claude
-  printf '  (subshell: %s passed, %s failed)\n' "$pass" "$fail"
-  exit "$fail"
-)
-inner=$?
+echo "== repo-declared patterns =="
+mkdir -p .claude
+printf 'coolify-create-app\\.sh\n' > .claude/deploy-commands
+check 2 "$PERM" './scripts/coolify-create-app.sh' 'repo pattern -> blocked inside repo'
+# A malformed repo pattern must fail CLOSED, not wave the deploy through.
+printf 'coolify-create-app(\n' > .claude/deploy-commands
+check 2 "$PERM" './scripts/coolify-create-app.sh' 'malformed repo pattern -> fails closed'
+
+cd "$ORIG_PWD" || true
 rm -rf "$TMP"
-fail=$((fail + inner))
 
 echo
 echo "  $pass passed, $fail failed"
