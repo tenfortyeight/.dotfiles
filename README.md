@@ -114,6 +114,7 @@ literally in the file if you need it to work everywhere, and `chmod 600` it.
 | `.terraformrc` | shared provider plugin cache, so workspaces don't each download their own |
 | `.bashrc` / `.bash_profile` | minimal — bash is the fallback shell, not the daily one |
 | `Brewfile` | every package and app, applied by `brew bundle` |
+| `claude/` | the portable half of `~/.claude` — instructions, enforcement hooks, skills, agents. `claude/link.sh` symlinks them in; see [claude/README.md](claude/README.md) |
 | `install.sh` | the bootstrap |
 
 ## Notes
