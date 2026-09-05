@@ -39,7 +39,12 @@ I work across several terminals and environments at once.
 Test business logic and policy decisions: pure functions, calculations, state transitions,
 authorization rules, parsers — anything with real edge cases. These are cheap to test, and
 that ease is the signal: they're easy because they're shaped right. Cover boundaries: -1, 0,
-1, null, empty, max. Test observable outcomes, not "did it call this mock".
+1, null, empty, max — test smart, not exhaustively. Test observable outcomes, not "did it
+call this mock".
+
+**Coverage is not a target.** Good coverage of what decides things beats 100% of everything. A
+coverage number rewards testing what is easy over what matters, and pushes you toward exactly
+the wiring tests below.
 
 **Don't test orchestration or wiring.** Which component composes which, what gets constructed
 when an env var is set, which branch runs at startup. If that breaks, the app is visibly
@@ -57,6 +62,9 @@ If something is hard to test, that's design feedback: redesign it rather than bu
 scaffolding around it. Never add an abstraction whose only purpose is to satisfy a test.
 
 ## TDD, for the things worth testing
+
+A bug means a test was missing. Reproduce it as a failing test *first*, then fix it — the test
+is what proves the fix, and it stays behind as the guard.
 
 - **Red** — one failing test at a time, failing for the right reason.
 - **Green** — minimum code to pass. Ugly is fine; correctness only.
