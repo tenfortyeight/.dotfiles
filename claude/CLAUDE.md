@@ -2,7 +2,9 @@
 
 Get things done. Quality comes from simple, obvious code — not from process. If something is
 easy to do, that is usually a sign it is shaped correctly. If it is hard, ask what is wrong
-with the design before reaching for more scaffolding. Never make it hard to do the right thing.
+with the design before reaching for more scaffolding. Make the right thing the easy thing and
+leave flexibility open; that beats making the wrong thing hard. Guardrails belong on blast
+radius — production, secrets, irreversible commands — not on the shape of code.
 
 Code should be easy for a human to read and follow. That includes this file, the hooks and the
 dotfiles: config is code, and the same standard applies.
@@ -73,6 +75,15 @@ is what proves the fix, and it stays behind as the guard.
 
 ## Code
 
+**Separation of concerns and single responsibility are the root.** Two views of one discipline:
+separation of concerns decides where the boundaries fall, single responsibility decides what a
+unit owns once they have. Most of what follows is a consequence of them rather than an
+independent rule — a function passes ~15–20 lines because it took on a second job; a module
+passes ~150–200 because it became two; nesting deepens when a decision and the work it governs
+get mixed together; a name goes vague when the thing it names does more than one thing. Read
+the numbers as symptoms, not limits: the fix is to separate what got merged, never to split at
+the line count.
+
 Guidelines, not rules — use judgment:
 
 - Functions ~15–20 lines, modules ~150–200. Longer is a prompt to look, not a violation.
@@ -80,7 +91,7 @@ Guidelines, not rules — use judgment:
 - Names reveal intent; code reads like prose.
 - **Look for an existing primitive before adding a new one.** Grep first. If the existing one genuinely doesn't fit, say so before creating a parallel pattern — reinventing fragments a codebase faster than anything else.
 - Prefer less code over more abstraction. Start simple, evolve by refactoring.
-- Single responsibility, separation of concerns. Domain structure over layered — but follow what the repo already does.
+- Domain structure over layered — but follow what the repo already does.
 - Scout's honour: leave what you touch equal or better.
 - Remove dead code as you go — unreachable functions, flags, imports, orphaned tests. Git history is the archive. If the cleanup is bigger than the task at hand, say so rather than silently leaving it.
 - Comment the "why" of non-obvious choices; otherwise let the code speak.
