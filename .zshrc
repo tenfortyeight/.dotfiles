@@ -8,6 +8,16 @@
 ZSH_DISABLE_COMPFIX=true
 
 # ---------------------------------------------------------------------------
+# Locale
+# ---------------------------------------------------------------------------
+# Terminal.app exports LANG=sv_SE.UTF-8 ("Set locale environment variables on
+# startup"), which makes git, coreutils and friends speak Swedish. Their English
+# output is what every man page, error string and search result is written
+# against, so translated messages actively cost time. Override messages only —
+# dates, sorting and number formatting stay Swedish.
+export LC_MESSAGES="en_US.UTF-8"
+
+# ---------------------------------------------------------------------------
 # PATH
 # ---------------------------------------------------------------------------
 # Homebrew is set up in ~/.zprofile (login shell), so it is already on PATH by
