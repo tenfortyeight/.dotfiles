@@ -54,8 +54,7 @@ for s in go scope verify checkpoint; do
   link "skills/$s" "skills/$s"
 done
 
-for a in nodejs-backend-expert nodejs-domain-integrator \
-         nodejs-error-security-guardian nodejs-persistence-expert; do
+for a in nodejs-error-security-guardian nodejs-persistence-expert; do
   link "agents/$a.md" "agents/$a.md"
 done
 
