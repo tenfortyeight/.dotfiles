@@ -9,6 +9,20 @@
 [user]
 	email = john@magnusson.gl
 	name = JoMa
+	signingkey = ~/.ssh/id_ed25519.pub
+
+# Sign with the SSH key that's already in the agent — no GPG keyring. An unsigned
+# commit's author field is free text: anyone can author as you and git won't
+# object. Signing is the only thing that makes the name evidence.
+# allowedSignersFile is what makes `git log --show-signature` verify locally
+# rather than just print the blob; a directory with its own identity overrides
+# signingkey in the machine-local config.
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = ~/.ssh/allowed_signers
+[commit]
+	gpgsign = true
 # Short-lived branches reconcile by replaying onto the new base, which is what
 # the stale-base reminder tells you to do anyway — a merge commit per pull just
 # records that origin moved.
