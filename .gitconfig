@@ -17,6 +17,12 @@
 	name = JoMa
 [pull]
 	rebase = false
+# Stale `origin/*` refs are a lie about what still exists: a merged branch is
+# deleted on the server, but the tracking ref lingers here until pruned, so
+# `git branch -a` keeps advertising work that already landed. Prunes on fetch.
+# This never deletes a local branch — `git branch -d` stays a deliberate act.
+[fetch]
+	prune = true
 [credential "https://github.com"]
 	helper = 
 	helper = !gh auth git-credential
