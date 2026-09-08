@@ -3,12 +3,6 @@
 [core]
 	editor = vim
 	autocrlf = False
-[merge]
-	tool = kdiff3
-[diff]
-	guitool = araxis
-[mergetool "kdiff3"]
-	path = /Applications/kdiff3.app/Contents/MacOS/kdiff3
 [push]
 	default = simple
 	autoSetupRemote = true
@@ -23,6 +17,8 @@
 # This never deletes a local branch — `git branch -d` stays a deliberate act.
 [fetch]
 	prune = true
+	pruneTags = true
+	all = true
 [credential "https://github.com"]
 	helper = 
 	helper = !gh auth git-credential
@@ -37,3 +33,46 @@
 # is not an error, so this is safe on a machine that has no local config.
 [include]
 	path = ~/.gitconfig.local
+
+# Reading history. Branches are a work queue here, not an archive — they live
+# half a day — so the freshest one belongs at the top of the list.
+[branch]
+	sort = -committerdate
+[tag]
+	sort = version:refname
+
+# Diffs that describe the change rather than the text. histogram tracks moved
+# code better than the default myers; colorMoved says which hunks moved rather
+# than were rewritten; mnemonicPrefix labels sides i/w/c instead of a/b.
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+
+# zdiff3 keeps the common lines outside the conflict markers, so a conflict
+# shows what actually diverged. Never used to text-merge a SOPS file.
+[merge]
+	conflictStyle = zdiff3
+
+# Rebase without the manual bookkeeping: fixup!/squash! commits reorder
+# themselves, a dirty tree stashes and comes back, and updateRefs carries the
+# other branches in a stack along with it.
+[rebase]
+	autoSquash = true
+	autoStash = true
+	updateRefs = true
+
+# Resolve a given conflict once and git replays that resolution next time it
+# sees it — earns its keep when the same rebase gets redone.
+[rerere]
+	enabled = true
+	autoupdate = true
+
+# Offer the correction, don't silently run it — autocorrect that guesses and
+# executes is how you fire a command you didn't type.
+[help]
+	autocorrect = prompt
+
+# Diff in the commit editor. A no-op for `commit -m`, useful by hand.
+[commit]
+	verbose = true
