@@ -26,6 +26,16 @@ export LC_MESSAGES="en_US.UTF-8"
 typeset -U path PATH
 path=("$HOME/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
 
+# Docker Desktop keeps docker-credential-desktop inside the .app rather than in
+# a brew prefix. `credsStore: desktop` in ~/.docker/config.json cannot resolve
+# without it, so any build that pulls a base image dies with
+# "docker-credential-desktop: executable file not found in $PATH" — even for an
+# anonymous pull, because the helper is still asked first. Appended, not
+# prepended: this must not shadow the `docker` binary already on PATH.
+_docker_app_bin="/Applications/Docker.app/Contents/Resources/bin"
+[[ -d "$_docker_app_bin" ]] && path=($path "$_docker_app_bin")
+unset _docker_app_bin
+
 # ---------------------------------------------------------------------------
 # oh-my-zsh
 # ---------------------------------------------------------------------------
