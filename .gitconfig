@@ -9,8 +9,16 @@
 [user]
 	email = john@magnusson.gl
 	name = JoMa
+# Short-lived branches reconcile by replaying onto the new base, which is what
+# the stale-base reminder tells you to do anyway — a merge commit per pull just
+# records that origin moved.
 [pull]
-	rebase = false
+	rebase = true
+
+# `main` for anything started here. Repos that still use `master` set it in the
+# machine-local config for that directory, so the default isn't fought per repo.
+[init]
+	defaultBranch = main
 # Stale `origin/*` refs are a lie about what still exists: a merged branch is
 # deleted on the server, but the tracking ref lingers here until pruned, so
 # `git branch -a` keeps advertising work that already landed. Prunes on fetch.
