@@ -21,8 +21,9 @@ cd ~/dotfiles
 `install.sh` is idempotent — re-run it any time. It installs Homebrew if it is
 missing, applies the `Brewfile`, sets up oh-my-zsh and powerlevel10k, symlinks
 everything into `$HOME`, links the VS Code key bindings, puts the macOS window
-shortcuts on Rectangle's chords, generates an ed25519 SSH key if there isn't one
-(copying the public half to the clipboard), and logs in to `gh`.
+shortcuts on Rectangle's chords, points iTerm2's split panes at the current
+directory, generates an ed25519 SSH key if there isn't one (copying the public
+half to the clipboard), and logs in to `gh`.
 
 If the machine will pull private packages from a registry, `gh` needs scopes
 beyond its defaults of `repo`, `read:org` and `gist`. Pass them in rather than
@@ -155,6 +156,19 @@ the character code must be `65535` for any key that produces no character,
 Only the actions macOS actually has are mapped. Rectangle's thirds,
 maximize-height, grow/shrink and move-to-next-display have no built-in
 counterpart, so those still want Rectangle itself.
+
+**iTerm2 split panes.** A new split pane should carry on in the directory the
+pane you split was in, while a new tab or window starts clean at `$HOME`.
+iTerm2 can express that, but only through the **Advanced** working-directory
+mode — the other three modes answer the same way for panes, tabs and windows.
+`macos/iterm-working-directory.sh` sets that mode on every profile and is
+idempotent. No shell integration is needed: iTerm2 asks the pane's process where
+it is, through the `pidinfo` XPC service it ships with.
+
+It is a settings file like any other, with one wrinkle: iTerm2 holds every
+profile in memory and writes the whole set back when it quits, so a change made
+underneath a running copy can be undone the moment you quit it. The script says
+so when it sees iTerm2 running — quit it and re-run.
 
 `vscode/keybindings.json` is part of the same change rather than a separate
 concern: VS Code binds `^⌥←`, `^⌥→` and `^⌥⌫` to camelCase sub-word editing

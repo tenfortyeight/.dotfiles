@@ -150,6 +150,14 @@ if [ -x "$DOTFILES_DIR/macos/window-shortcuts.sh" ]; then
   "$DOTFILES_DIR/macos/window-shortcuts.sh"
 fi
 
+# --- iTerm2 ----------------------------------------------------------------
+# Split panes continue in the directory you were already in; new tabs and
+# windows still start at $HOME. Skipped until iTerm2 has run once, because it
+# creates the profiles this patches.
+if [ -x "$DOTFILES_DIR/macos/iterm-working-directory.sh" ]; then
+  "$DOTFILES_DIR/macos/iterm-working-directory.sh"
+fi
+
 # --- nvm --------------------------------------------------------------------
 # Homebrew installs nvm.sh into the brew prefix but does NOT create $NVM_DIR,
 # and nvm refuses to work without it. .zshrc sources nvm.sh from either location.
