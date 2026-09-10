@@ -1,0 +1,15 @@
+// VS Code key bindings. Symlinked to
+// ~/Library/Application Support/Code/User/keybindings.json by install.sh.
+[
+  // Free ^⌥←, ^⌥→ and ^⌥⌫ for the macOS window tiling shortcuts that
+  // macos/window-shortcuts.sh installs. VS Code binds all three to camelCase
+  // sub-word editing whenever a text input has focus, and an app binding wins
+  // over a system hotkey — so without these the window would stay put while
+  // ^⌥⌫ quietly ate half a word instead.
+  //
+  // The cost is losing sub-word navigation on those chords. Plain ⌥←/⌥→ still
+  // move by whole word; only the camelCase-aware variants go.
+  { "key": "ctrl+alt+left", "command": "-cursorWordPartLeft" },
+  { "key": "ctrl+alt+right", "command": "-cursorWordPartRight" },
+  { "key": "ctrl+alt+backspace", "command": "-deleteWordPartLeft" }
+]

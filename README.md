@@ -20,7 +20,8 @@ cd ~/dotfiles
 
 `install.sh` is idempotent — re-run it any time. It installs Homebrew if it is
 missing, applies the `Brewfile`, sets up oh-my-zsh and powerlevel10k, symlinks
-everything into `$HOME`, generates an ed25519 SSH key if there isn't one
+everything into `$HOME`, links the VS Code key bindings, puts the macOS window
+shortcuts on Rectangle's chords, generates an ed25519 SSH key if there isn't one
 (copying the public half to the clipboard), and logs in to `gh`.
 
 If the machine will pull private packages from a registry, `gh` needs scopes
@@ -115,6 +116,8 @@ literally in the file if you need it to work everywhere, and `chmod 600` it.
 | `.bashrc` / `.bash_profile` | minimal — bash is the fallback shell, not the daily one |
 | `Brewfile` | every package and app, applied by `brew bundle` |
 | `claude/` | the portable half of `~/.claude` — instructions, enforcement hooks, skills, agents. `claude/link.sh` symlinks them in; see [claude/README.md](claude/README.md) |
+| `vscode/` | VS Code key bindings. Only `keybindings.json` — `settings.json` is left machine-local |
+| `macos/` | macOS system settings applied by script rather than symlink — currently the window tiling shortcuts |
 | `install.sh` | the bootstrap |
 
 ## Notes
@@ -135,6 +138,30 @@ two fight over the line editor during startup.
 `nvm` is sourced from whichever location it was installed to — Homebrew's prefix
 or `~/.nvm` — so it works whether it came from `brew` or from nvm's own
 installer.
+
+**Window shortcuts.** macOS has its own window tiling, but it ships on `^🌐` and
+`^⇧🌐` chords that need the globe key. `macos/window-shortcuts.sh` moves the
+built-in actions onto the `^⌥` layout Rectangle uses, so the muscle memory
+carries over without running another app. It writes
+`com.apple.symbolichotkeys` and is idempotent.
+
+Two things about that domain are worth knowing before editing the script,
+because both fail in the same misleading way — the shortcut appears correctly in
+System Settings and then never fires. Values must be written as **integers**,
+which is why the script goes through `PlistBuddy` and not `defaults write`; and
+the character code must be `65535` for any key that produces no character,
+**including return and delete**, not that key's literal ASCII.
+
+Only the actions macOS actually has are mapped. Rectangle's thirds,
+maximize-height, grow/shrink and move-to-next-display have no built-in
+counterpart, so those still want Rectangle itself.
+
+`vscode/keybindings.json` is part of the same change rather than a separate
+concern: VS Code binds `^⌥←`, `^⌥→` and `^⌥⌫` to camelCase sub-word editing
+whenever a text input has focus, and an app binding beats a system hotkey. Left
+alone, the window stays put and `^⌥⌫` eats half a word instead. VS Code rewrites
+that file when you edit shortcuts through its UI, which can replace the symlink
+with a plain file — re-run `install.sh` to restore it.
 
 powerlevel10k is cloned by `install.sh` rather than vendored into this repo, so
 it updates independently of these dotfiles.

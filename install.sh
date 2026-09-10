@@ -129,6 +129,27 @@ if [ -x "$DOTFILES_DIR/claude/link.sh" ]; then
   "$DOTFILES_DIR/claude/link.sh"
 fi
 
+# --- VS Code ---------------------------------------------------------------
+# Only keybindings.json is tracked. settings.json is left alone: it collects
+# per-machine and per-extension state, and half of it would be job-specific in
+# a public repo.
+info "VS Code"
+CODE_USER="$HOME/Library/Application Support/Code/User"
+if [ -d "$HOME/Library/Application Support/Code" ]; then
+  mkdir -p "$CODE_USER"
+  ln -sfn "$DOTFILES_DIR/vscode/keybindings.json" "$CODE_USER/keybindings.json"
+  ok "keybindings.json linked"
+else
+  warn "VS Code has not run on this machine yet — skipping"
+fi
+
+# --- macOS window shortcuts ------------------------------------------------
+# Puts the built-in tiling on Rectangle's ^⌥ chords. Depends on the VS Code
+# link above, which is what stops VS Code swallowing three of them.
+if [ -x "$DOTFILES_DIR/macos/window-shortcuts.sh" ]; then
+  "$DOTFILES_DIR/macos/window-shortcuts.sh"
+fi
+
 # --- nvm --------------------------------------------------------------------
 # Homebrew installs nvm.sh into the brew prefix but does NOT create $NVM_DIR,
 # and nvm refuses to work without it. .zshrc sources nvm.sh from either location.
