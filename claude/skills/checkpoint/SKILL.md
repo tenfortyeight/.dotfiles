@@ -76,6 +76,21 @@ Sections that don't apply can be omitted, but **In progress** and **Next steps**
 - **Do** record AWS profile / kube context if either matters for the next step.
 - Verify the file was written, then tell the user the path and a one-line summary so they know where to point a fresh session.
 
+## Retention — prune on the way out
+
+A checkpoint is a handoff, not an archive: once the work it describes has shipped it is
+stale, and a directory of stale handoffs is a trap for the next session that reads one.
+So the directory prunes itself every time it grows. **After writing the new checkpoint,
+run:**
+
+```bash
+find .claude/checkpoints -name '*.md' -type f -mtime +14 -delete
+```
+
+14 days, no cron, nothing to remember. Say how many were removed if any were. Git history
+is the archive for anything that mattered; a checkpoint older than two weeks describes a
+session nobody is resuming.
+
 ## Resuming from a checkpoint
 
 When the user starts a new session with "resume from `.claude/checkpoints/<file>`" (or similar):
