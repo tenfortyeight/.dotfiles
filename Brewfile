@@ -74,6 +74,7 @@ brew "kubectl"
 # `brew "hashicorp/tap/terraform"` with `tap "hashicorp/tap"` above, or
 # `brew "opentofu"` — the drop-in fork, still in core, and it honours the
 # .terraformrc plugin cache in this repo.
+brew "gcx"
 
 # ---------------------------------------------------------------------------
 # Fonts
