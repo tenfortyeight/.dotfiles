@@ -95,3 +95,4 @@ cask "claude"                       # Anthropic's desktop app
 cask "claude-code"                  # the CLI
 cask "aldente"                      # cap the battery charge percentage
 cask "notunes"                      # stop Apple Music hijacking the play key
+cask "spotify"
