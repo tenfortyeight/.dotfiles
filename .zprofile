@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+export PATH="$PATH:/Users/john.magnusson/.docker/bin"
+# End of Docker Desktop section.
+
 # Login shell. Homebrew belongs here, not in .zshrc — it only needs setting once
 # per login, and .zshrc runs for every subshell.
 #
