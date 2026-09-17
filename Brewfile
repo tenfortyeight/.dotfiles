@@ -74,7 +74,29 @@ brew "kubectl"
 # `brew "hashicorp/tap/terraform"` with `tap "hashicorp/tap"` above, or
 # `brew "opentofu"` — the drop-in fork, still in core, and it honours the
 # .terraformrc plugin cache in this repo.
+
+# Grafana CLI — the successor to grafanactl. Installed with no configuration:
+# which Grafana instance and which credential are job-specific, so the login
+# step lives in the README and its config stays machine-local.
 brew "gcx"
+
+# ---------------------------------------------------------------------------
+# Databases
+# ---------------------------------------------------------------------------
+# psql and the pg_dump/pg_restore family, without a database server. libpq is
+# the client half of Postgres on its own, where a `postgresql@N` formula would
+# also install a server and initialise a cluster on this machine — which a
+# laptop that only ever connects to databases elsewhere has no use for.
+#
+# It is keg-only: Homebrew does not link it into the prefix, because the same
+# binaries ship with `postgresql@N` and the two would collide. .zshrc puts its
+# bin dir on PATH, which is the only reason `psql` resolves without a path.
+brew "libpq"
+# The friendlier prompt on top: completion, syntax highlighting, multi-line
+# editing. Both earn their place — pgcli is the nicer place to sit, psql is what
+# every runbook, `\copy` example and remote host assumes. pgcli depends on libpq
+# but does not give you psql, since that dependency stays keg-only.
+brew "pgcli"
 
 # ---------------------------------------------------------------------------
 # Fonts
@@ -90,6 +112,9 @@ cask "docker-desktop"               # also provides the built-in Kubernetes
 cask "gcloud-cli"                   # .zshrc sources its path/completion from the brew prefix
 cask "rectangle"                    # window snapping via keyboard shortcuts
 cask "visual-studio-code"           # also puts the `code` CLI on PATH; $EDITOR stays vim
+# The GUI end of the Postgres clients above: a schema browser, visual query
+# plans, and somewhere to read a wide result set that a terminal would wrap.
+cask "pgadmin4"
 cask "firefox"
 cask "google-chrome"
 cask "claude"                       # Anthropic's desktop app

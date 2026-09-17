@@ -41,7 +41,7 @@ reminder that the step exists — if a private install 401s or 404s on a new
 machine, a missing scope is the first thing to check, and `gh auth refresh -s
 <scope>` adds one without redoing the login.
 
-Then open a new terminal and do the three things below that no script can.
+Then open a new terminal and do the things below that no script can.
 
 ## After the bootstrap
 
@@ -56,6 +56,42 @@ CLI shims on first run, so they will not exist until you have opened the app.
 **Enable Kubernetes if you want it.** Docker Desktop ships a single-node
 cluster: Settings → Kubernetes → Enable. It is off by default and `brew bundle`
 cannot turn it on.
+
+**Log in to Grafana.** `brew bundle` installs `gcx` — the Grafana CLI that
+succeeds `grafanactl` — with no configuration at all, because everything it
+needs is job-specific: which Grafana instance, and a credential for it. None of
+that belongs in this public repo, so the login is a manual step. gcx keeps its
+own config at `~/.config/gcx/config.yaml`, which is untracked machine-local
+state like the files under [Machine-local config](#machine-local-config).
+
+```sh
+gcx login <context-name> --server https://<stack>.grafana.net --oauth
+```
+
+`--oauth` opens a browser and is the least effort for Grafana Cloud; it also
+leaves no long-lived token on disk. Where a browser is not available, pass a
+credential instead: `--token glsa_…` for a service-account token created inside
+the Grafana instance, or `--cloud-token` for an access-policy token from
+grafana.com. Both are secrets, both land in that config file, and neither
+belongs in shell history.
+
+Then check it:
+
+```sh
+gcx config check
+```
+
+Until the login has happened it answers `✘ Configuration: Invalid
+configuration: context references no stack with grafana config`, which is how
+you tell an installed gcx apart from a configured one. A green check also
+proves connectivity, not just that a token is present.
+
+Each Grafana instance is its own context, so a second one is another `gcx
+login <name> --server …`. `gcx config list-contexts` shows them, `gcx config
+use-context <name>` switches, and `--context <name>` overrides for a single
+command. gcx also reads a `.gcx.yaml` from the working directory, so a repo can
+pin the context its dashboards belong to instead of relying on whichever one is
+current.
 
 **Install the vim plugins.** `install.sh` fetches vim-plug, but the plugins in
 `.vimrc` are pulled by vim itself:
@@ -139,6 +175,19 @@ two fight over the line editor during startup.
 `nvm` is sourced from whichever location it was installed to — Homebrew's prefix
 or `~/.nvm` — so it works whether it came from `brew` or from nvm's own
 installer.
+
+**Postgres clients.** `psql` comes from `libpq`, the client half of Postgres
+on its own — a `postgresql@N` formula would also install a server and
+initialise a local cluster, which a laptop that only connects to databases
+elsewhere never starts. libpq is keg-only, meaning Homebrew installs it without
+linking it into the prefix, so the PATH entry in `.zshrc` is the only reason
+`psql`, `pg_dump` and `pg_restore` resolve at all. `pgcli` sits alongside it as
+the friendlier prompt — completion, syntax highlighting, multi-line editing —
+rather than in place of it: it does not provide `psql`, and `psql` is what the
+runbooks, the connection-string examples and the remote host all assume. pgAdmin
+is the third option for when neither is the right shape — browsing an unfamiliar
+schema, reading a visual query plan, scrolling a result set too wide to wrap in
+a terminal.
 
 **Window shortcuts.** macOS has its own window tiling, but it ships on `^🌐` and
 `^⇧🌐` chords that need the globe key. `macos/window-shortcuts.sh` moves the

@@ -36,6 +36,15 @@ _docker_app_bin="/Applications/Docker.app/Contents/Resources/bin"
 [[ -d "$_docker_app_bin" ]] && path=($path "$_docker_app_bin")
 unset _docker_app_bin
 
+# libpq — psql, pg_dump, pg_restore — is keg-only, so Homebrew installs it
+# without linking its bin dir into the prefix. See the Brewfile for why the
+# client-only formula rather than a full postgresql. Appended, not prepended:
+# if a postgresql ever does get linked here, its own client tools should win,
+# because they match the server version they shipped with.
+_libpq_bin="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/libpq/bin"
+[[ -d "$_libpq_bin" ]] && path=($path "$_libpq_bin")
+unset _libpq_bin
+
 # ---------------------------------------------------------------------------
 # oh-my-zsh
 # ---------------------------------------------------------------------------
