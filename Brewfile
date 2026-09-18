@@ -118,7 +118,9 @@ cask "pgadmin4"
 cask "firefox"
 cask "google-chrome"
 cask "claude"                       # Anthropic's desktop app
-cask "claude-code"                  # the CLI
+# The Claude Code CLI is deliberately not a cask. The cask does not update
+# itself, so it sits at whatever version the last `brew upgrade` left behind;
+# the native build updates in the background. install.sh installs it.
 cask "aldente"                      # cap the battery charge percentage
 cask "notunes"                      # stop Apple Music hijacking the play key
 cask "spotify"

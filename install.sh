@@ -122,6 +122,19 @@ for file in .zshrc .zprofile .bashrc .bash_profile .gitconfig .gitignore .vimrc 
 done
 
 # --- Claude Code -----------------------------------------------------------
+# The CLI comes from Anthropic's native installer rather than the Brewfile: that
+# build updates itself in the background, where the cask would need a `brew
+# upgrade` to move. It lands in ~/.local/bin, which .zshrc already puts ahead of
+# the brew prefix on PATH. Once it is there it keeps itself current, so this
+# only ever has to run on a fresh machine.
+info "Claude Code"
+if [ -x "$HOME/.local/bin/claude" ]; then
+  ok "claude $("$HOME/.local/bin/claude" --version | cut -d' ' -f1) — self-updating"
+else
+  curl -fsSL https://claude.ai/install.sh | bash
+  ok "claude installed"
+fi
+
 # Only the portable config is linked (CLAUDE.md, settings, hooks, skills,
 # agents). Transcripts, history and per-project memory stay machine-local and
 # are gitignored — see claude/link.sh for the explicit list.

@@ -228,3 +228,8 @@ with a plain file — re-run `install.sh` to restore it.
 
 powerlevel10k is cloned by `install.sh` rather than vendored into this repo, so
 it updates independently of these dotfiles.
+
+The Claude Code CLI is installed the same way, by `install.sh` from Anthropic's
+native installer, and for the same reason: that build updates itself in the
+background. The Homebrew cask does not, so it would sit at whatever version the
+last `brew upgrade` left behind. Only the desktop app comes from the Brewfile.
