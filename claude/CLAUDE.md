@@ -145,3 +145,10 @@ Commit early and often in reviewable chunks. Oneliner messages.
 Done means the behaviour works and you have seen it work: checks run, output pasted, or the
 real thing exercised. Close the tracking issue and the worktree. If part is unfinished, say
 plainly what and why — never report something as working when you haven't watched it work.
+
+## This machine
+
+Personal and machine-specific instructions live outside this repo, in an optional untracked file
+(see the dotfiles README). It loads last, so it can add to anything above:
+
+@~/.claude/CLAUDE.local.md
