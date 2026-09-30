@@ -148,10 +148,8 @@ plainly what and why — never report something as working when you haven't watc
 
 ## This machine
 
-`~/.claude/settings.json` is generated — never edit it, and don't trust "don't ask again" to
-stick. Put portable settings in `~/dotfiles/claude/settings.json` (public repo: nothing job-
-or machine-specific) and this machine's own permissions, hooks and model in the untracked
-`~/.claude/settings.local.json`, then run `~/dotfiles/claude/link.sh` to rebuild.
+`~/.claude/settings.json` is generated — never edit it. Where settings go instead: the
+"settings.json is built" section of `~/dotfiles/claude/README.md`.
 
 Personal and machine-specific instructions live outside this repo, in an optional untracked file
 (see the dotfiles README). It loads last, so it can add to anything above:
