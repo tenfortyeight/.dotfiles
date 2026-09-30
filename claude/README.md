@@ -48,10 +48,10 @@ configured and enforces nothing. Every hook here reads stdin with `jq`.
 |---|---|---|
 | `deploy-permission-guard` | PreToolUse | No deploy-shaped command without explicit approval (`# APPROVED`) |
 | `deploy-ref-guard` | PreToolUse | No deploy unless `HEAD == origin/<default>` and the tree is clean (`# REF-OVERRIDE`) |
-| `review-gate` | PreToolUse | No `gh pr create` without a review receipt for that SHA |
 | `sops-guard` | PreToolUse | Never edit an encrypted SOPS file in place |
 | `aws-profile-guard` | PreToolUse | Mutating AWS calls must name an explicit profile |
 | `commit-hygiene` | PreToolUse | Oneliner commit messages, no heredocs |
+| `stale-base-guard` | PreToolUse | Warns when committing onto a base that is behind origin |
 | `terraform-push-reminder` | PreToolUse | Warns that CI is linux/amd64 before pushing `.tf` changes |
 | `post-edit-validate` | PostToolUse | terraform fmt / yamllint / shellcheck / kustomize / JSON validity |
 | `verifier-gate` | Stop | Blocks ending a turn on substantive unverified source changes |
