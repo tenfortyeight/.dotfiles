@@ -4,7 +4,17 @@
   },
   "includeCoAuthoredBy": false,
   "permissions": {
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(git push origin --delete *)",
+      "Bash(git branch -d *)",
+      "Bash(git branch -D *)",
+      "Bash(git worktree add *)",
+      "Bash(git worktree remove *)",
+      "Bash(bun run dev)",
+      "Bash(pkill -f \"bun run dev\")",
+      "Bash(pkill -f 'bun run dev')"
+    ]
   },
   "skillOverrides": {
     "peon-ping-config": "off"

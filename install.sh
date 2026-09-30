@@ -135,9 +135,10 @@ else
   ok "claude installed"
 fi
 
-# Only the portable config is linked (CLAUDE.md, settings, hooks, skills,
-# agents). Transcripts, history and per-project memory stay machine-local and
-# are gitignored — see claude/link.sh for the explicit list.
+# Only the portable config is linked (CLAUDE.md, hooks, skills, agents), and
+# settings.json is built from it plus ~/.claude/settings.local.json.
+# Transcripts, history and per-project memory stay machine-local and are
+# gitignored — see claude/link.sh for the explicit list.
 if [ -x "$DOTFILES_DIR/claude/link.sh" ]; then
   "$DOTFILES_DIR/claude/link.sh"
 fi

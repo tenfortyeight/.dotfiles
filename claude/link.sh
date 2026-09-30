@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Symlink the portable Claude Code config into ~/.claude.
+# Symlink the portable Claude Code config into ~/.claude, and build
+# ~/.claude/settings.json from it plus this machine's settings.local.json.
 #
 # Called by ../install.sh; safe to run on its own. Idempotent.
 #
@@ -20,6 +21,16 @@ warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 info "Claude Code config"
 mkdir -p "$CLAUDE_DIR/hooks" "$CLAUDE_DIR/skills" "$CLAUDE_DIR/agents"
 
+have() { command -v "$1" >/dev/null 2>&1; }
+
+stash() { # <path-relative-to-~/.claude> — move a real file/dir aside before replacing it
+  local dir
+  dir="$CLAUDE_DIR/backups/replaced-$(date +%Y%m%d-%H%M%S)"
+  mkdir -p "$dir/$(dirname "$1")"
+  mv "$CLAUDE_DIR/$1" "$dir/$1"
+  warn "replaced real $1 (saved to backups/$(basename "$dir")/$1)"
+}
+
 link() { # <src-relative-to-here> <dest-relative-to-~/.claude>
   local src="$HERE/$1" dest="$CLAUDE_DIR/$2"
   [ -e "$src" ] || { warn "missing $1 — skipped"; return 0; }
@@ -28,11 +39,7 @@ link() { # <src-relative-to-here> <dest-relative-to-~/.claude>
   # the link inside it — silently leaving the real dir in place and unmanaged.
   # Move any real file/dir aside first so the link always lands where intended.
   if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-    local stash
-    stash="$CLAUDE_DIR/backups/replaced-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$stash/$(dirname "$2")"
-    mv "$dest" "$stash/$2"
-    warn "replaced real $2 (saved to backups/$(basename "$stash")/$2)"
+    stash "$2"
   fi
   ln -sfn "$src" "$dest"
   # Prove the link resolves — a dangling link is worse than no link.
@@ -40,8 +47,46 @@ link() { # <src-relative-to-here> <dest-relative-to-~/.claude>
   ok ".claude/$2"
 }
 
+# settings.json is BUILT, not linked: the portable settings.json here, merged
+# with an optional untracked ~/.claude/settings.local.json holding this
+# machine's own permissions, hooks and model. Claude Code has no user-level
+# local file of its own (it reads ~/.claude/settings.local.json only in sessions
+# started in ~), so the overlay is folded in here. Objects merge recursively,
+# lists concatenate without duplicates, and a scalar in the overlay wins.
+#
+# Anything Claude Code writes into settings.json itself (/config, /model) is
+# overwritten by the next build — backed up first, so move keepers into the
+# overlay.
+build_settings() {
+  local dest="$CLAUDE_DIR/settings.json" tmp
+  local sources=("$HERE/settings.json")
+  [ -f "$CLAUDE_DIR/settings.local.json" ] && sources+=("$CLAUDE_DIR/settings.local.json")
+  have jq || { warn "jq not found — cannot build settings.json"; return 1; }
+
+  tmp="$(mktemp "$CLAUDE_DIR/settings.json.XXXXXX")"
+  jq -s '
+    def merge($a; $b):
+      if ($a|type) == "object" and ($b|type) == "object" then
+        reduce ($b|keys_unsorted[]) as $k ($a; .[$k] = merge($a[$k]; $b[$k]))
+      elif ($a|type) == "array" and ($b|type) == "array" then $a + ($b - $a)
+      elif $b == null then $a
+      else $b end;
+    reduce .[] as $s ({}; merge(.; $s))
+  ' "${sources[@]}" > "$tmp" || { rm -f "$tmp"; warn "settings merge failed — settings.json left as is"; return 1; }
+  chmod 644 "$tmp"
+
+  # A real file that differs from the build holds edits made outside both
+  # sources — keep a copy rather than silently dropping them.
+  if [ -f "$dest" ] && [ ! -L "$dest" ] &&
+     ! diff -q <(jq -S . "$dest" 2>/dev/null) <(jq -S . "$tmp") >/dev/null; then
+    stash settings.json
+  fi
+  mv "$tmp" "$dest"
+  ok ".claude/settings.json (built from ${#sources[@]} source(s))"
+}
+
 link CLAUDE.md    CLAUDE.md
-link settings.json settings.json
+build_settings
 
 for f in sops-guard deploy-permission-guard deploy-ref-guard review-gate \
          aws-profile-guard commit-hygiene terraform-push-reminder \
@@ -61,7 +106,6 @@ done
 # peon-ping is installed out of band (a Homebrew formula, but NOT declared in this
 # repo's Brewfile) and is not tracked here. The hook entries tolerate its absence,
 # so nothing breaks on a machine without it.
-have() { command -v "$1" >/dev/null 2>&1; }
 have jq || warn "jq not found — every hook reads its payload with jq and will no-op without it"
 have shellcheck || warn "shellcheck not found — the PostToolUse shell validator will be silent"
 

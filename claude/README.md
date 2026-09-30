@@ -9,10 +9,33 @@ the work and is safe to run on its own.
 | Path | What it is |
 |---|---|
 | `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", definition of done |
-| `settings.json` | Hook wiring, theme, effort level, transcript retention. All paths `$HOME`-relative |
+| `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
 | `hooks/` | Nine enforcement hooks plus `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
 | `agents/` | Four stack-generic Node.js reviewer agents |
+
+## settings.json is built, not linked
+
+Claude Code has only one settings file that applies in every project,
+`~/.claude/settings.json`. It reads `~/.claude/settings.local.json` just for
+sessions started in `~` itself. So a machine's own permissions, hooks and model
+can't go in a file of their own that Claude Code picks up everywhere, and they
+can't go here either, because this repo is public.
+
+`link.sh` therefore **builds** `~/.claude/settings.json` by merging this
+`settings.json` with an optional, untracked `~/.claude/settings.local.json`:
+objects merge recursively, lists concatenate without duplicates, and a scalar in
+the local file wins. Job-specific allow rules (internal CLIs, container names,
+work directories) and machine-specific hooks go in the local file.
+
+Two consequences:
+
+- **Edit a source, then re-run `link.sh`.** Changing `claude/settings.json` does
+  nothing until the next build.
+- **Changes made inside Claude Code don't survive a build.** `/config`, `/model`
+  and "don't ask again" write to the built file. The next build notices the
+  drift, saves the old file to `~/.claude/backups/replaced-*/`, and overwrites
+  it. Move anything worth keeping into `settings.local.json`.
 
 ## The hooks
 

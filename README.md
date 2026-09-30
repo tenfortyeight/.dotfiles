@@ -124,6 +124,7 @@ optional — the shell and git both work with none of them present.
 | `~/.gitconfig.local` | git config for this machine. `.gitconfig` includes it last, so a `[user]` block here overrides the personal identity. The right place for a `includeIf "gitdir:…"` that switches identity per work directory |
 | `~/.gitconfig.work` | the per-job identity itself, pulled in by the conditional include above |
 | `~/.npmrc` | private package scope → registry mappings, and the auth token for them |
+| `~/.claude/settings.local.json` | Claude Code settings for this machine: job-specific permission allow rules, machine-specific hooks, model. `claude/link.sh` merges it into `~/.claude/settings.json`, so re-run that after editing — see [claude/README.md](claude/README.md#settingsjson-is-built-not-linked) |
 | `~/.claude/CLAUDE.local.md` | personal Claude Code instructions — anything about you rather than how you work. The shared `claude/CLAUDE.md` imports it last |
 
 **Keep tokens out of files.** Where a tool reads `${VAR}` from the environment
