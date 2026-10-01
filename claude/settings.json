@@ -47,10 +47,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/deploy-permission-guard.sh"
-          },
-          {
-            "type": "command",
             "command": "$HOME/.claude/hooks/deploy-ref-guard.sh",
             "timeout": 40
           },

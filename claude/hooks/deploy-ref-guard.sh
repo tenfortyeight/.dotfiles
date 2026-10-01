@@ -2,10 +2,8 @@
 # PreToolUse(Bash) guard: refuse deploy-shaped commands unless the working tree
 # is clean and HEAD is exactly origin/<default-branch>.
 #
-# Why: approval was never the missing piece — the *ref* was. The existing
-# permission hook asks "may I deploy?"; this one asks "are you deploying what
-# is actually on main?". They need separate override markers, otherwise saying
-# yes to the first silently says yes to the second.
+# Why: approval was never the missing piece — the *ref* was. Whether to deploy
+# is left to auto mode; this asks "are you deploying what is actually on main?".
 #
 # Exit 2 + stderr = blocked, message fed back to Claude.
 set -uo pipefail
@@ -47,7 +45,6 @@ case "$rc" in
   *) echo "BLOCK (deploy guard): deploy pattern failed to compile (grep exit $rc). Refusing to run a deploy-shaped command behind a broken guard — check .claude/deploy-commands." >&2; exit 2 ;;
 esac
 
-# Deliberately NOT the same marker as the permission hook's "# APPROVED".
 printf '%s' "$cmd" | grep -qE '(# REF-OVERRIDE|DEPLOY_REF_OVERRIDE=1)' && exit 0
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0

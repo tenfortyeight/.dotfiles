@@ -10,7 +10,7 @@ the work and is safe to run on its own.
 |---|---|
 | `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", definition of done |
 | `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
-| `hooks/` | Nine enforcement hooks plus `test-guards.sh` |
+| `hooks/` | Eight enforcement hooks plus `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
 | `agents/` | Four stack-generic Node.js reviewer agents |
 
@@ -46,7 +46,6 @@ configured and enforces nothing. Every hook here reads stdin with `jq`.
 
 | Hook | Event | Enforces |
 |---|---|---|
-| `deploy-permission-guard` | PreToolUse | No deploy-shaped command without explicit approval (`# APPROVED`) |
 | `deploy-ref-guard` | PreToolUse | No deploy unless `HEAD == origin/<default>` and the tree is clean (`# REF-OVERRIDE`) |
 | `sops-guard` | PreToolUse | Never edit an encrypted SOPS file in place |
 | `aws-profile-guard` | PreToolUse | Mutating AWS calls must name an explicit profile |
@@ -56,10 +55,10 @@ configured and enforces nothing. Every hook here reads stdin with `jq`.
 | `post-edit-validate` | PostToolUse | terraform fmt / yamllint / shellcheck / kustomize / JSON validity |
 | `verifier-gate` | Stop | Blocks ending a turn on substantive unverified source changes |
 
-The two deploy guards use **separate** override markers on purpose: approving a
-deploy must not silently approve deploying the wrong ref.
+Whether to deploy at all is left to auto mode and the instructions; the guard
+only makes sure what gets deployed is what is on origin.
 
-Run `bash ~/.claude/hooks/test-guards.sh` to confirm they fire.
+Run `bash ~/.claude/hooks/test-guards.sh` to confirm it fires.
 
 ### Per-repo specifics
 
@@ -73,8 +72,8 @@ The guards stay generic; a repo declares its own particulars:
 
 ## Requirements
 
-`jq` is required — every hook parses its payload with it. Without it the two deploy
-guards and `verifier-gate` warn on stderr and stand down; the remaining six go
+`jq` is required — every hook parses its payload with it. Without it the deploy
+guard and `verifier-gate` warn on stderr and stand down; the remaining six go
 quiet, so check for `jq` first if a hook seems inert. `verifier-gate` stands down
 rather than blocking because its loop guard reads `stop_hook_active` through `jq`,
 and a Stop hook that cannot read that flag could block repeatedly.

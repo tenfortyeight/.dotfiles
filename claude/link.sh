@@ -88,7 +88,7 @@ build_settings() {
 link CLAUDE.md    CLAUDE.md
 build_settings
 
-for f in sops-guard deploy-permission-guard deploy-ref-guard \
+for f in sops-guard deploy-ref-guard \
          aws-profile-guard commit-hygiene terraform-push-reminder \
          stale-base-guard post-edit-validate verifier-gate test-guards; do
   chmod +x "$HERE/hooks/$f.sh" 2>/dev/null || true
