@@ -47,6 +47,19 @@ esac
 
 printf '%s' "$cmd" | grep -qE '(# REF-OVERRIDE|DEPLOY_REF_OVERRIDE=1)' && exit 0
 
+# Check the repo the deploy runs in, not the session's: a session often deploys a
+# sibling with `cd ../other && ./deploy.sh`, and its own tree says nothing about that.
+deploy_dir() {
+  local base before target
+  base="$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null)"
+  base="${base:-$PWD}"
+  [[ "$cmd" =~ $DEPLOY_RE ]] && before="${cmd%%"${BASH_REMATCH[0]}"*}"
+  target="$(printf '%s' "${before:-}" | grep -oE '(^|[;&|])[[:space:]]*cd[[:space:]]+[^[:space:];&|]+' | tail -1 | sed -E 's/.*cd[[:space:]]+//')"
+  target="${target/#\~/$HOME}"
+  (cd "$base" && cd "${target:-.}" 2>/dev/null && pwd) || echo "$base"
+}
+cd "$(deploy_dir)" || exit 0
+
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 git remote get-url origin >/dev/null 2>&1 || exit 0
 

@@ -44,6 +44,17 @@ echo two > b.txt; git add .; git commit -qm two
 check 2 "$REF" './scripts/deploy.sh' 'unpushed commit -> blocked'
 check 0 "$REF" './scripts/deploy.sh # REF-OVERRIDE' 'explicit override -> allowed'
 
+echo "== the repo checked is the one the deploy runs in =="
+# A session in one repo often deploys a sibling with `cd ../other && ./deploy.sh`.
+# Checking the session's own repo instead blocked clean deploys over another
+# session's stray file — and waved through deploys from a dirty sibling.
+git -C "$TMP/origin.git" symbolic-ref HEAD refs/heads/main
+git clone -q "$TMP/origin.git" "$TMP/synced" 2>/dev/null
+check 0 "$REF" "cd $TMP/synced && ./scripts/deploy.sh" 'cd into a synced repo -> allowed'
+cd "$TMP/synced" || exit 1
+check 2 "$REF" "cd $TMP/work && ./scripts/deploy.sh" 'cd into an unpushed repo -> blocked'
+cd "$TMP/work" || exit 1
+
 # From here HEAD is ahead of origin, so every deploy-shaped command is blocked
 # (2) and anything else passes untouched (0): the cases below test the matcher.
 
@@ -56,7 +67,7 @@ check 0 "$REF" "git log --oneline scripts/deploy.sh"
 echo "== executing one is =="
 check 2 "$REF" './scripts/deploy.sh --only api'
 check 2 "$REF" 'bash scripts/deploy.sh'
-check 2 "$REF" 'cd /tmp; ./deploy.sh'
+check 2 "$REF" 'cd .; ./deploy.sh'
 check 2 "$REF" 'kubectl apply -f x.yaml'
 check 2 "$REF" 'terraform apply'
 check 2 "$REF" 'helm upgrade api ./chart'
