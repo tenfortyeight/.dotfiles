@@ -37,6 +37,36 @@ Two consequences:
   drift, saves the old file to `~/.claude/backups/replaced-*/`, and overwrites
   it. Move anything worth keeping into `settings.local.json`.
 
+## Auto mode
+
+The auto mode classifier reads its `autoMode` block from `~/.claude/settings.json`
+only — never from a repo's `.claude/settings*.json` — so the built file is the
+one place it can live. Its three lists do different jobs, and mixing them up is
+why routine deploys stayed blocked:
+
+- **`allow`** is the only lever that clears a block. Each entry is a prose
+  exception that overrides a matching `soft_deny` rule. The generic ones live
+  here: user-requested operations, consent relayed to subagents, read-only
+  diagnosis of your own prod host, decrypting your own sops secrets.
+- **`environment`** is context, not permission. Telling it "operations the user
+  asked for are routine" changes nothing; naming the deploy target, the prod host
+  and the secrets store does. Those facts are job-specific, so they go in
+  `settings.local.json`.
+- **`soft_deny`** adds blocks. Here it only adds force-push and history rewrite on
+  a default branch.
+
+Every list starts with `"$defaults"`. Setting a list without it **replaces** the
+shipped entries rather than adding to them. The lists concatenate on build, so
+the one `"$defaults"` here covers the local entries too.
+
+A subagent's classifier sees only the subagent's own transcript, not the "go"
+you gave its parent — hence the relayed-consent rule. The classifier also
+refuses to let a session widen its own `allow`. That is deliberate, so expect to
+apply changes to it yourself.
+
+`claude auto-mode config` prints what is in effect; `claude auto-mode critique`
+reviews the custom rules.
+
 ## The hooks
 
 Claude Code delivers each hook its payload as **JSON on stdin**. There is no
