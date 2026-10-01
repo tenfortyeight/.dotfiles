@@ -145,5 +145,11 @@
   "skipDangerousModePermissionPrompt": true,
   "effortLevel": "high",
   "theme": "dark-daltonized",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Force-push, reset --hard or history rewrite on a default branch"
+    ]
+  }
 }
