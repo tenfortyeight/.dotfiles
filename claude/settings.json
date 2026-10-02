@@ -6,14 +6,19 @@
   "permissions": {
     "defaultMode": "auto",
     "allow": [
-      "Bash(git push origin --delete *)",
-      "Bash(git branch -d *)",
+      "Bash(bun run dev)",
+      "Bash(gh search *)",
       "Bash(git branch -D *)",
+      "Bash(git branch -d *)",
+      "Bash(git fetch *)",
+      "Bash(git grep *)",
+      "Bash(git push origin --delete *)",
       "Bash(git worktree add *)",
       "Bash(git worktree remove *)",
-      "Bash(bun run dev)",
       "Bash(pkill -f \"bun run dev\")",
-      "Bash(pkill -f 'bun run dev')"
+      "Bash(pkill -f 'bun run dev')",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude_ai_Notion__notion-fetch"
     ]
   },
   "skillOverrides": {
