@@ -2,7 +2,8 @@
 
 The portable half of `~/.claude` — generic engineering practice only, no job- or
 machine-specific content. `../install.sh` symlinks it into place; `link.sh` does
-the work and is safe to run on its own.
+the work and is safe to run on its own. It also removes links left dangling by a
+file retired from this repo, so a deleted hook or agent doesn't linger.
 
 ## What is here
 

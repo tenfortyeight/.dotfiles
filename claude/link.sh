@@ -85,6 +85,18 @@ build_settings() {
   ok ".claude/settings.json (built from ${#sources[@]} source(s))"
 }
 
+# A file retired from this repo leaves its old link behind, dangling. Remove
+# those — but only links into this repo, so links other tools made are left be.
+prune() {
+  local l
+  for l in "$CLAUDE_DIR"/hooks/* "$CLAUDE_DIR"/skills/* "$CLAUDE_DIR"/agents/*; do
+    [ -L "$l" ] && [ ! -e "$l" ] || continue
+    case "$(readlink "$l")" in
+      "$HERE"/*) rm "$l"; warn "removed ${l#"$HOME"/}, its target is gone" ;;
+    esac
+  done
+}
+
 link CLAUDE.md    CLAUDE.md
 build_settings
 
@@ -102,6 +114,8 @@ done
 for a in nodejs-error-security-guardian nodejs-persistence-expert; do
   link "agents/$a.md" "agents/$a.md"
 done
+
+prune
 
 # peon-ping is installed out of band (a Homebrew formula, but NOT declared in this
 # repo's Brewfile) and is not tracked here. The hook entries tolerate its absence,
