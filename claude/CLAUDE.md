@@ -15,9 +15,44 @@ Roll forward, not back — fix by moving forward, not by reverting.
 
 - Read the surrounding code and match its patterns.
 - Check live state before proposing a fix — kubectl, AWS CLI, logs, the actual database. Don't guess from code alone.
-- **When the cause is unclear, or the change is risky or wide-reaching: outline 2–3 approaches with tradeoffs and wait.** When the fix is obvious, just make it. Use judgment — don't turn every task into a planning exercise.
 - If requirements are genuinely ambiguous, ask. Don't guess at business logic.
 - For GitHub workflows, trace the full flow end-to-end so steps don't fall through the cracks.
+
+## Working hands-off
+
+I run several sessions at once and check in on them, not with them. Every stop that waits for
+me stalls the work, so stop only where my judgment is actually needed.
+
+- **Decide what a commit can undo.** Which approach, how to structure it, which existing tool to
+  use: pick the best option, say why in a line, and carry on. **Outline 2–3 approaches and wait**
+  only when the change touches blast radius (production, data, secrets, anything irreversible),
+  changes the scope I gave you, or needs a business decision.
+- **Fix it, don't file it.** A problem you find along the way is part of the work. If it is
+  bigger than the task, hand it to a subagent and fold the result in. File an issue only when it
+  needs my decision or access you don't have, and put the diagnosis in it.
+- **A blocked command is a detour, not a stop.** Read why it was blocked, then take another
+  route: a read-only equivalent, a different tool, something the allow rules already cover. Keep
+  going on everything that doesn't depend on it, and collect what genuinely needs me into one
+  message at the end. Never retry the same call unchanged, and never route around a guard on
+  blast radius — that block is doing its job.
+- **Turn a repeated correction into a fix, at the lowest level that works.** When I correct
+  something I've corrected before, propose the fix in the same session. Prefer deleting or
+  rewording an existing line, then changing a default in a script or skill, then an allow rule.
+  A new rule or hook is the last resort: harness slows the work down, and it is easier to add
+  than to remove.
+
+## Delegate real work to subagents
+
+Default to doing the actual work in subagents, not just high-volume reading. The lead session
+orchestrates — it holds the goal, the plan and the decisions; subagents carry the bulk work and
+its noisy history (file dumps, test output, dead ends) so that noise never reaches the main
+context. This keeps the thread readable, spends tokens on progress rather than scrollback, and
+lets independent pieces run in parallel. Ask a subagent for what the lead needs to decide —
+the conclusion, the evidence, what is left — not a replay of how it got there.
+
+Not a hard rule and not enforced: a quick edit or a one-off command costs more to hand off than
+to just do. Use judgment — delegate when the work is substantial, read-heavy, or
+parallelizable; do it inline when the overhead would exceed the work.
 
 ## Verify, don't recall
 
@@ -96,7 +131,7 @@ Guidelines, not rules — use judgment:
 - Prefer less code over more abstraction. Start simple, evolve by refactoring.
 - Domain structure over layered — but follow what the repo already does.
 - Scout's honour: leave what you touch equal or better.
-- Remove dead code as you go — unreachable functions, flags, imports, orphaned tests. Git history is the archive. If the cleanup is bigger than the task at hand, say so rather than silently leaving it.
+- Remove dead code as you go — unreachable functions, flags, imports, orphaned tests. Git history is the archive.
 - Comment the "why" of non-obvious choices; otherwise let the code speak.
 
 ### Error handling
@@ -134,16 +169,6 @@ Commit early and often in reviewable chunks. Oneliner messages.
 - Terraform: confirm `terraform init` works on x86 before pushing.
 - Bash: `set -euo pipefail`, quote variables, `command -v` before use, shellcheck patterns.
 
-## Delegate real work to subagents
-
-Default to doing the actual work in subagents, not just high-volume reading. The lead session
-orchestrates — it holds the goal, the plan and the decisions; subagents carry the bulk work and
-its noisy history (file dumps, test output, dead ends) so that noise never reaches the main
-context. This keeps the thread readable, spends tokens on progress rather than scrollback, and
-lets independent pieces run in parallel. Not a hard rule and not enforced: a quick edit or a
-one-off command costs more to hand off than to just do. Use judgment — delegate when the work is
-substantial, read-heavy, or parallelizable; do it inline when the overhead would exceed the work.
-
 ## Tools
 
 - `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
@@ -155,8 +180,11 @@ substantial, read-heavy, or parallelizable; do it inline when the overhead would
 ## Done
 
 Done means the behaviour works and you have seen it work: checks run, output pasted, or the
-real thing exercised. Close the tracking issue and the worktree. If part is unfinished, say
-plainly what and why — never report something as working when you haven't watched it work.
+real thing exercised. End to end means the whole arc: merged, shipped where I've authorized the
+deploy, seen working live, tracking issue closed, worktree removed. Before calling it done, have
+an agent that didn't write the change check the claim against the original ask — `/go` step 3.5
+is that check. If part is unfinished, say plainly what and why — never report something as
+working when you haven't watched it work.
 
 ## This machine
 
