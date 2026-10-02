@@ -58,7 +58,10 @@ Contract checks earn their place only where two things live in separate files, m
 drift silently — a log format an alert parses, an i18n key set, a design token list.
 
 **Build gates beat tests for a whole class of problems.** Run `tsc`, the linter, the build.
-That is where broken wiring actually surfaces, and it costs nothing.
+That is where broken wiring actually surfaces, and it costs nothing. On a greenfield repo, wire
+these in on day one — before the first feature — so drift and broken wiring surface for free the
+next time you touch it, not in a later cleanup session. The first visit is cheap; the gate is
+what keeps the second one cheap too.
 
 If something is hard to test, that's design feedback: redesign it rather than building
 scaffolding around it. Never add an abstraction whose only purpose is to satisfy a test.

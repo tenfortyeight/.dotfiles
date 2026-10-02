@@ -64,6 +64,8 @@ Invoke the `verify` skill. This runs file-type validators and environment/profil
 ### 2. Simplify (`/simplify`)
 Invoke the built-in `simplify` skill to review the changed code for reuse opportunities, quality issues, and inefficiencies, and to fix anything it finds.
 
+Then ask the scout's-honour question explicitly, because adding is easier to notice than removing: **what did this change make dead, and what can now be removed?** — superseded functions, flags no longer read, imports left orphaned, tests that pin behaviour that no longer exists. Remove it in this chain, not a later cleanup. If the diff is almost all additions, that is the prompt to look, not a verdict — greenfield legitimately adds. If the cleanup is genuinely bigger than this change, say so rather than leaving two truths behind.
+
 **Gate:** Let `simplify` apply its changes. After it finishes, re-run `/verify` quickly on the modified files to make sure nothing it changed introduced a validator failure. If it did, stop and report.
 
 ### 3. Review (`/review-squad`)
