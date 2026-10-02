@@ -34,7 +34,9 @@ me stalls the work, so stop only where my judgment is actually needed.
   route: a read-only equivalent, a different tool, something the allow rules already cover. Keep
   going on everything that doesn't depend on it, and collect what genuinely needs me into one
   message at the end. Never retry the same call unchanged, and never route around a guard on
-  blast radius — that block is doing its job.
+  blast radius — that block is doing its job. Most blocks are avoidable: run a read and a write
+  as separate calls, and never annotate a command with approval (`# APPROVED`) — consent comes
+  from me in the conversation, and a self-written note reads as a bypass attempt.
 - **Turn a repeated correction into a fix, at the lowest level that works.** When I correct
   something I've corrected before, propose the fix in the same session. Prefer deleting or
   rewording an existing line, then changing a default in a script or skill, then an allow rule.
@@ -49,6 +51,10 @@ its noisy history (file dumps, test output, dead ends) so that noise never reach
 context. This keeps the thread readable, spends tokens on progress rather than scrollback, and
 lets independent pieces run in parallel. Ask a subagent for what the lead needs to decide —
 the conclusion, the evidence, what is left — not a replay of how it got there.
+
+A subagent isolated in a worktree only runs commands it can see stay inside that worktree, so
+write files with Write/Edit rather than heredocs, and run one plain command per call — no
+`cd` or `-C` chains, loops or `$(…)` in front of git.
 
 Not a hard rule and not enforced: a quick edit or a one-off command costs more to hand off than
 to just do. Use judgment — delegate when the work is substantial, read-heavy, or
