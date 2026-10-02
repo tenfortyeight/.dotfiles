@@ -161,7 +161,8 @@ live Prometheus endpoint before committing a panel.
 `origin/<default>`, reconcile if behind. Several sessions run against these repos at once, so
 origin moves while you work. Re-fetch before pushing.
 
-Commit early and often in reviewable chunks. Oneliner messages.
+Commit early and often in reviewable chunks, oneliner messages. Never hand back a dirty tree:
+finished work gets committed without waiting for a go-ahead.
 
 - Default to trunk-based on `main` when it's unprotected. Don't open a PR out of habit.
 - Use a worktree when parallel sessions share a repo.
