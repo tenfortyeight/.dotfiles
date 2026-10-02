@@ -134,6 +134,16 @@ Commit early and often in reviewable chunks. Oneliner messages.
 - Terraform: confirm `terraform init` works on x86 before pushing.
 - Bash: `set -euo pipefail`, quote variables, `command -v` before use, shellcheck patterns.
 
+## Delegate real work to subagents
+
+Default to doing the actual work in subagents, not just high-volume reading. The lead session
+orchestrates — it holds the goal, the plan and the decisions; subagents carry the bulk work and
+its noisy history (file dumps, test output, dead ends) so that noise never reaches the main
+context. This keeps the thread readable, spends tokens on progress rather than scrollback, and
+lets independent pieces run in parallel. Not a hard rule and not enforced: a quick edit or a
+one-off command costs more to hand off than to just do. Use judgment — delegate when the work is
+substantial, read-heavy, or parallelizable; do it inline when the overhead would exceed the work.
+
 ## Tools
 
 - `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
@@ -141,7 +151,6 @@ Commit early and often in reviewable chunks. Oneliner messages.
 - `/scope` — for genuinely multi-step work with a fuzzy ask. Not for every task.
 - `/review-squad` — available when a change is wide or distributed. Not a gate.
 - `/checkpoint` — suggest proactively on long or risky sessions.
-- Use subagents for high-volume reading — logs, test output, deep searches. Explore in parallel.
 
 ## Done
 
