@@ -88,4 +88,4 @@ Run the appropriate validator for every file type touched in the current branch.
 - Does not run tests unless they're part of the project's default script chain (`npm test`, etc.). For TDD-first bug work, the user writes the failing test manually.
 - Does not commit, push, or deploy.
 - Does not auto-fix (other than `terraform fmt`, which is safe). Report and let the user decide.
-- Does not pass judgment on architecture or design — that's `/review-squad`.
+- Does not pass judgment on architecture or design — that's the review squad, `/go` step 3.

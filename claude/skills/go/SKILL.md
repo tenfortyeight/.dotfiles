@@ -3,7 +3,7 @@ name: go
 description: >
   Use when the user types /go (outer pre-PR chain: verify → simplify → review →
   adversarial verify → commit → optional PR → optional notify) or /go tdd (inner
-  red-green-refactor-commit cycle for one slice of bug/behavior work). Never
+  red-green-refactor-commit cycles for bug/behavior work, then the outer chain). Never
   deploys, merges, or force-pushes.
 user-invocable: true
 ---
@@ -68,8 +68,8 @@ Then ask the scout's-honour question explicitly, because adding is easier to not
 
 **Gate:** Let `simplify` apply its changes. After it finishes, re-run `/verify` quickly on the modified files to make sure nothing it changed introduced a validator failure. If it did, stop and report.
 
-### 3. Review (`/review-squad`)
-Spawn the review-squad agents (architecture, security, QA, devil's-advocate) **in parallel** via the Agent tool with `subagent_type: general-purpose` — Plan agents go idle without responding to messages, see user preferences.
+### 3. Review squad
+Spawn the review-squad agents (architecture, security, QA, devil's-advocate) **in parallel** via the Agent tool with `subagent_type: general-purpose` — Plan agents go idle without responding to messages.
 
 - Architecture → does this fit the platform design? Patterns consistent across repos?
 - Security → secrets exposure, input validation, auth boundaries, OWASP concerns

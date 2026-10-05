@@ -181,7 +181,7 @@ finished work gets committed without waiting for a go-ahead.
 - `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
 - `/simplify` — in the refactor step, and again before a PR.
 - `/scope` — for genuinely multi-step work with a fuzzy ask. Not for every task.
-- `/review-squad` — available when a change is wide or distributed. Not a gate.
+- Review squad — `/go` step 3 (architecture, security, QA, devil's-advocate agents in parallel). Worth running on its own when a change is wide or distributed. Not a gate.
 - `/checkpoint` — suggest proactively on long or risky sessions.
 
 ## Done
