@@ -9,7 +9,7 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 
 | Path | What it is |
 |---|---|
-| `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", working hands-off, subagent delegation, definition of done |
+| `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", working hands-off, the lead as coordinator, sharing repos and environments with other sessions, definition of done |
 | `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
 | `hooks/` | Eight enforcement hooks plus `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |

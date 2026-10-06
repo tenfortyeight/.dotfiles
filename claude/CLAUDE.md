@@ -43,22 +43,34 @@ me stalls the work, so stop only where my judgment is actually needed.
   A new rule or hook is the last resort: harness slows the work down, and it is easier to add
   than to remove.
 
-## Delegate real work to subagents
+## You are the coordinator
 
-Default to doing the actual work in subagents, not just high-volume reading. The lead session
-orchestrates — it holds the goal, the plan and the decisions; subagents carry the bulk work and
-its noisy history (file dumps, test output, dead ends) so that noise never reaches the main
-context. This keeps the thread readable, spends tokens on progress rather than scrollback, and
-lets independent pieces run in parallel. Ask a subagent for what the lead needs to decide —
-the conclusion, the evidence, what is left — not a replay of how it got there.
+The lead session holds the goal, the plan and the decisions, and stays lean. The work itself
+goes to subagents in worktrees, so its noisy history (file dumps, test output, dead ends)
+never reaches the main context. This keeps the thread readable, spends tokens on progress
+rather than scrollback, and lets independent pieces run in parallel. Ask a subagent for what
+the lead needs to decide — the conclusion, the evidence, what is left — not a replay of how it
+got there. A one-off lookup or command is cheaper to run than to hand off; anything more goes
+to a subagent.
+
+**The lead runs the steps auto mode refuses from a subagent:** pushes to `main` where the repo
+is trunk-based (unless I say otherwise), deploys, and commands against production. A
+subagent's classifier sees only its own transcript, not the go-ahead I gave you, so it blocks
+them. Have the subagent finish and push its branch, then run that step yourself.
 
 A subagent isolated in a worktree only runs commands it can see stay inside that worktree, so
 write files with Write/Edit rather than heredocs, and run one plain command per call — no
 `cd` or `-C` chains, loops or `$(…)` in front of git.
 
-Not a hard rule and not enforced: a quick edit or a one-off command costs more to hand off than
-to just do. Use judgment — delegate when the work is substantial, read-heavy, or
-parallelizable; do it inline when the overhead would exceed the work.
+## Other sessions share the repo and the environment
+
+- **Check `ListAgents` before a deploy.** Message any busy session working in the same repo or
+  environment to say what you are about to ship.
+- **Take the shared deploy lock where there is one, and release it in the same command as the
+  deploy** — `acquire && { deploy; release; }` — so a deploy that fails or gets interrupted
+  can't leave the lock held.
+- **Keep the board true** where the work has one: move the card when work starts, blocks or
+  lands, in the same step as the change, not at the end of the day.
 
 ## Verify, don't recall
 
@@ -163,9 +175,12 @@ live Prometheus endpoint before committing a panel.
 
 ## Git
 
-**Fetch first.** Before editing or committing in any repo: `git fetch origin`, compare HEAD to
-`origin/<default>`, reconcile if behind. Several sessions run against these repos at once, so
-origin moves while you work. Re-fetch before pushing.
+**Fetch first.** Before editing, before every commit and before every push: `git fetch
+origin`, compare HEAD to `origin/<default>`, reconcile if behind. Several sessions run against
+these repos at once, so origin moves while you work.
+
+**Never rebase or force-push a feature branch — merge the default branch into it.** Other
+sessions may have the branch checked out, and rewritten history strands their work.
 
 Commit early and often in reviewable chunks, oneliner messages. Never hand back a dirty tree:
 finished work gets committed without waiting for a go-ahead.
