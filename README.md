@@ -161,7 +161,7 @@ literally in the file if you need it to work everywhere, and `chmod 600` it.
 
 ## Notes
 
-**zsh plugins.** `git`, `github`, `brew` and `kubectl` ship with oh-my-zsh.
+**zsh plugins.** `git`, `gh`, `brew` and `kubectl` ship with oh-my-zsh.
 `jq`, `zsh-autosuggestions` and `zsh-syntax-highlighting` do not — `install.sh`
 clones them into `$ZSH_CUSTOM/plugins`. Installing the zsh-users ones with
 Homebrew is not enough: those land in the brew prefix, which oh-my-zsh never

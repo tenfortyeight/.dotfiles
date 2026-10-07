@@ -51,7 +51,7 @@ unset _libpq_bin
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
-# git/github/brew/kubectl ship with oh-my-zsh. jq, zsh-autosuggestions and
+# git/gh/brew/kubectl ship with oh-my-zsh. jq, zsh-autosuggestions and
 # zsh-syntax-highlighting do not — install.sh clones them into
 # $ZSH_CUSTOM/plugins. Note the Homebrew builds of the zsh-users plugins land in
 # the brew prefix, which oh-my-zsh does not look at, so brew alone is not enough.
@@ -63,7 +63,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # NOTE: zsh-syntax-highlighting must stay last — it wraps the line editor and
 # anything loaded after it will not be highlighted.
 plugins=()
-for _p in git github brew kubectl jq zsh-autosuggestions zsh-syntax-highlighting; do
+for _p in git gh brew kubectl jq zsh-autosuggestions zsh-syntax-highlighting; do
   if [[ -d "$ZSH/plugins/$_p" || -d "${ZSH_CUSTOM:-$ZSH/custom}/plugins/$_p" ]]; then
     plugins+=("$_p")
   fi
