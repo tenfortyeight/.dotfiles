@@ -236,10 +236,6 @@ an agent that didn't write the change check the claim against the original ask �
 is that check. If part is unfinished, say plainly what and why — never report something as
 working when you haven't watched it work.
 
-A step that depends on someone remembering to run it is not done. Builds, promotions and
-releases have to work hands-off, or they break the day everyone forgets: build the step into
-the pipeline, or say plainly that it is outstanding and what it costs.
-
 ## This machine
 
 `~/.claude/settings.json` is generated — never edit it. Where settings go instead: the
