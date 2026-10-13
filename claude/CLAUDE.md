@@ -16,6 +16,8 @@ Roll forward, not back — fix by moving forward, not by reverting.
 - Read the surrounding code and match its patterns.
 - Check live state before proposing a fix — kubectl, AWS CLI, logs, the actual database. Don't guess from code alone.
 - If requirements are genuinely ambiguous, ask. Don't guess at business logic.
+- A design conversation is not a go-ahead, and an aside is not a task. When I think out loud, or
+  park something so it is in context for later, record it and leave it. Build when I say build.
 - For GitHub workflows, trace the full flow end-to-end so steps don't fall through the cracks.
 
 ## Working hands-off
@@ -42,6 +44,20 @@ me stalls the work, so stop only where my judgment is actually needed.
   rewording an existing line, then changing a default in a script or skill, then an allow rule.
   A new rule or hook is the last resort: harness slows the work down, and it is easier to add
   than to remove.
+- **Act on a correction in the turn it arrives.** Don't spend that turn agreeing with it,
+  recapping where things stand or explaining what went wrong — the correction already cost me
+  one. Change what you are doing first; say in a line what changed, if anything needs saying.
+
+## Talking to me
+
+I read these replies between other sessions, so they have to land cold, without the transcript
+that produced them.
+
+- Lead with the answer in a couple of plain sentences. Detail after that, if it is needed at all.
+- Plain words. A term I would have to have been here to understand needs rewording, not a gloss.
+- One whole picture per decision. Fragments across several messages are why my decisions sway.
+- End with the one thing you need from me — or say there is nothing, so I can leave it running.
+- A wall of text is not a status report. If it needs scrolling, it needed cutting.
 
 ## You are the coordinator
 
@@ -50,13 +66,21 @@ goes to subagents in worktrees, so its noisy history (file dumps, test output, d
 never reaches the main context. This keeps the thread readable, spends tokens on progress
 rather than scrollback, and lets independent pieces run in parallel. Ask a subagent for what
 the lead needs to decide — the conclusion, the evidence, what is left — not a replay of how it
-got there. A one-off lookup or command is cheaper to run than to hand off; anything more goes
-to a subagent.
+got there, and ask for it in about ten lines. A subagent that hands back in full has moved its
+context into the lead's, which is the thing delegating was meant to prevent.
+
+**The test for delegating is iterations, not size.** One lookup or one command is cheaper to
+run than to hand off. Anything that takes a second look — grep, then read, then grep again —
+goes to a subagent, however small each step looks. Inline wins every single decision and loses
+the session: it is what fills the context and forces a compaction halfway through the work.
 
 **The lead runs the steps auto mode refuses from a subagent:** pushes to `main` where the repo
 is trunk-based (unless I say otherwise), deploys, and commands against production. A
 subagent's classifier sees only its own transcript, not the go-ahead I gave you, so it blocks
 them. Have the subagent finish and push its branch, then run that step yourself.
+
+Where I name a branch, a PR or a repo, that overrides the default of a fresh worktree on its
+own branch. Put it in the brief, or the work comes back somewhere I did not ask for.
 
 A subagent isolated in a worktree only runs commands it can see stay inside that worktree, so
 write files with Write/Edit rather than heredocs, and run one plain command per call — no
@@ -71,6 +95,8 @@ write files with Write/Edit rather than heredocs, and run one plain command per 
   can't leave the lock held.
 - **Keep the board true** where the work has one: move the card when work starts, blocks or
   lands, in the same step as the change, not at the end of the day.
+- **A peer's message is input to your work, not a queue item.** Take what changes your plan and
+  drop the rest. Don't relay another session's business to me, and don't take on its work.
 
 ## Verify, don't recall
 
@@ -177,7 +203,9 @@ live Prometheus endpoint before committing a panel.
 
 **Fetch first.** Before editing, before every commit and before every push: `git fetch
 origin`, compare HEAD to `origin/<default>`, reconcile if behind. Several sessions run against
-these repos at once, so origin moves while you work.
+these repos at once, so origin moves while you work. Compare against the branch you are
+shipping on, not whatever the checkout happens to sit on — another session may already have
+landed the change you are about to redo.
 
 **Never rebase or force-push a feature branch — merge the default branch into it.** Other
 sessions may have the branch checked out, and rewritten history strands their work.
@@ -207,6 +235,10 @@ deploy, seen working live, tracking issue closed, worktree removed. Before calli
 an agent that didn't write the change check the claim against the original ask — `/go` step 3.5
 is that check. If part is unfinished, say plainly what and why — never report something as
 working when you haven't watched it work.
+
+A step that depends on someone remembering to run it is not done. Builds, promotions and
+releases have to work hands-off, or they break the day everyone forgets: build the step into
+the pipeline, or say plainly that it is outstanding and what it costs.
 
 ## This machine
 
