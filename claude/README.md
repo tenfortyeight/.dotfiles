@@ -10,10 +10,16 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 | Path | What it is |
 |---|---|
 | `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", working hands-off, the lead as coordinator, sharing repos and environments with other sessions, definition of done |
+| `rules/` | Two further global instruction files: docs hygiene and shipping work |
 | `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
 | `hooks/` | Eight enforcement hooks plus `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
 | `agents/` | Two stack-generic Node.js agents: error handling and persistence |
+
+Claude Code reads every `.md` under `~/.claude/rules/` into every session, the
+same way it reads `CLAUDE.md`, so what is in there is global instruction and not
+reference material. A subject gets its own file once it is self-contained enough
+that `CLAUDE.md` would only swell around it.
 
 ## settings.json is built, not linked
 

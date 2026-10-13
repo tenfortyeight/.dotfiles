@@ -6,8 +6,9 @@ lives in it — see [Machine-local config](#machine-local-config) for where that
 goes.
 
 [`claude/`](claude/) holds the portable half of `~/.claude`: global engineering
-instructions, eight enforcement hooks, four skills and two agents. Transcripts,
-history and per-project memory stay machine-local and gitignored. See
+instructions, two rules files, eight enforcement hooks, four skills and two
+agents. Transcripts, history and per-project memory stay machine-local and
+gitignored. See
 [claude/README.md](claude/README.md).
 
 ## Bootstrap a new Mac
