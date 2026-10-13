@@ -7,7 +7,7 @@
 	default = simple
 	autoSetupRemote = true
 [user]
-	email = john@magnusson.gl
+	email = 1265081+tenfortyeight@users.noreply.github.com
 	name = JoMa
 	signingkey = ~/.ssh/id_ed25519.pub
 
