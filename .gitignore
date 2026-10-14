@@ -33,7 +33,6 @@ claude/*
 !claude/hooks/
 !claude/skills/
 !claude/agents/
-!claude/rules/
 
 # ...and re-exclude anything that must never ship even inside those dirs.
 claude/**/*.bak*

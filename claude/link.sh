@@ -19,7 +19,7 @@ ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
 warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 
 info "Claude Code config"
-mkdir -p "$CLAUDE_DIR/hooks" "$CLAUDE_DIR/skills" "$CLAUDE_DIR/agents" "$CLAUDE_DIR/rules"
+mkdir -p "$CLAUDE_DIR/hooks" "$CLAUDE_DIR/skills" "$CLAUDE_DIR/agents"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -89,7 +89,7 @@ build_settings() {
 # those — but only links into this repo, so links other tools made are left be.
 prune() {
   local l
-  for l in "$CLAUDE_DIR"/hooks/* "$CLAUDE_DIR"/skills/* "$CLAUDE_DIR"/agents/* "$CLAUDE_DIR"/rules/*; do
+  for l in "$CLAUDE_DIR"/hooks/* "$CLAUDE_DIR"/skills/* "$CLAUDE_DIR"/agents/*; do
     [ -L "$l" ] && [ ! -e "$l" ] || continue
     case "$(readlink "$l")" in
       "$HERE"/*) rm "$l"; warn "removed ${l#"$HOME"/}, its target is gone" ;;
@@ -113,12 +113,6 @@ done
 
 for a in nodejs-error-security-guardian nodejs-persistence-expert; do
   link "agents/$a.md" "agents/$a.md"
-done
-
-# Loaded into every session alongside CLAUDE.md, so a real file in the way is a
-# rule Claude Code is already reading — link() stashes it to backups/ first.
-for r in docs-hygiene shipping-work; do
-  link "rules/$r.md" "rules/$r.md"
 done
 
 prune
