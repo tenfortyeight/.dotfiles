@@ -39,6 +39,11 @@ me stalls the work, so stop only where my judgment is actually needed.
   blast radius — that block is doing its job. Most blocks are avoidable: run a read and a write
   as separate calls, and never annotate a command with approval (`# APPROVED`) — consent comes
   from me in the conversation, and a self-written note reads as a bypass attempt.
+- **A session that starts refusing everything is spent.** One genuinely risky call — a safety
+  bypass flag, a secret file, a prod token — leaves auto mode refusing the rest of that session
+  too, down to a plain `grep`. It does not recover, and re-wording the command won't help. Hand
+  what is left to a fresh subagent with a short brief and let the poisoned one go; arguing with
+  the classifier costs more than starting over.
 - **Turn a repeated correction into a fix, at the lowest level that works.** When I correct
   something I've corrected before, propose the fix in the same session. Prefer deleting or
   rewording an existing line, then changing a default in a script or skill, then an allow rule.
