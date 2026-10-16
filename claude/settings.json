@@ -7,10 +7,10 @@
     "defaultMode": "auto",
     "allow": [
       "Bash(bun run dev)",
-      "Bash(command -v:*)",
-      "Bash(find:*)",
+      "Bash(command -v *)",
+      "Bash(find *)",
       "Bash(gh search *)",
-      "Bash(grep:*)",
+      "Bash(grep *)",
       "Bash(git branch -D *)",
       "Bash(git branch -d *)",
       "Bash(git fetch *)",
@@ -18,11 +18,11 @@
       "Bash(git push origin --delete *)",
       "Bash(git worktree add *)",
       "Bash(git worktree remove *)",
-      "Bash(ls:*)",
+      "Bash(ls *)",
       "Bash(pkill -f \"bun run dev\")",
       "Bash(pkill -f 'bun run dev')",
-      "Bash(sort:*)",
-      "Bash(wc:*)",
+      "Bash(sort *)",
+      "Bash(wc *)",
       "mcp__claude-in-chrome__tabs_context_mcp",
       "mcp__claude_ai_Notion__notion-fetch"
     ]
