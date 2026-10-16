@@ -47,7 +47,7 @@ why routine deploys stayed blocked:
 
 - **`allow`** is the only lever that clears a block. Each entry is a prose
   exception that overrides a matching `soft_deny` rule. The generic ones live
-  here: user-requested operations, consent relayed to subagents, read-only
+  here: user-requested operations, read-only git and forge reads, read-only
   diagnosis of your own prod host, decrypting your own sops secrets.
 - **`environment`** is context, not permission. Telling it "operations the user
   asked for are routine" changes nothing; naming the deploy target, the prod host
@@ -60,10 +60,16 @@ Every list starts with `"$defaults"`. Setting a list without it **replaces** the
 shipped entries rather than adding to them. The lists concatenate on build, so
 the one `"$defaults"` here covers the local entries too.
 
-A subagent's classifier sees only the subagent's own transcript, not the "go"
-you gave its parent — hence the relayed-consent rule. The classifier also
-refuses to let a session widen its own `allow`. That is deliberate, so expect to
-apply changes to it yourself.
+A subagent's classifier sees only the subagent's own transcript, not the "go" you
+gave its parent, so it blocks what the parent was told to do. There is no rule
+here that relays that consent, deliberately: the prompt a subagent reads is
+written by its parent, so a relay is agent-authored text the subagent cannot
+verify — a prompt-injected lead could manufacture a "go" that was never given.
+The lead runs those steps itself instead, which is what `CLAUDE.md` says under
+"You are the coordinator".
+
+The classifier also refuses to let a session widen its own `allow`. That is
+deliberate, so expect to ask for those changes rather than make them.
 
 `claude auto-mode config` prints what is in effect; `claude auto-mode critique`
 reviews the custom rules.
