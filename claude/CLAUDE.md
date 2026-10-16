@@ -80,9 +80,13 @@ goes to a subagent, however small each step looks. Inline wins every single deci
 the session: it is what fills the context and forces a compaction halfway through the work.
 
 **The lead runs the steps auto mode refuses from a subagent:** pushes to `main` where the repo
-is trunk-based (unless I say otherwise), deploys, and commands against production. A
-subagent's classifier sees only its own transcript, not the go-ahead I gave you, so it blocks
-them. Have the subagent finish and push its branch, then run that step yourself.
+is trunk-based (unless I say otherwise), deploys, commands against production, and reaching a
+production database — the tunnel and the credential fetch both. A subagent's classifier sees
+only its own transcript, not the go-ahead I gave you, so it blocks them, and no rule relays
+that consent: the brief a subagent reads is written by its parent, so a relayed "go" is text
+the subagent cannot verify. Have the subagent finish and push its branch, then run that step
+yourself. A subagent reporting one of these blocked is the expected answer, not a fault to
+debug or re-word around — take the step back and run it in the lead without being asked.
 
 Where I name a branch, a PR or a repo, that overrides the default of a fresh worktree on its
 own branch. Put it in the brief, or the work comes back somewhere I did not ask for.
