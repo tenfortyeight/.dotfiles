@@ -2,6 +2,7 @@
 name: nodejs-error-security-guardian
 description: Error handling and runtime safety for Node.js backends — structured error hierarchies, schema validation at the edge, log sanitization, and correlation IDs for tracing. Use when designing an error model, hardening input validation, or tracking down what a failure actually exposed.
 model: sonnet
+mode: subagent
 color: "#DC2626"
 ---
 

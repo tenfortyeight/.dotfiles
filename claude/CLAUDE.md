@@ -74,6 +74,13 @@ the lead needs to decide — the conclusion, the evidence, what is left — not 
 got there, and ask for it in about ten lines. A subagent that hands back in full has moved its
 context into the lead's, which is the thing delegating was meant to prevent.
 
+**Size the subagent to the job.** A subagent is not a copy of the lead. Set its model and effort
+explicitly, every time: the cheapest that can do the task. Lookups, greps, file reads, log
+digging and mechanical edits go to the small, fast model at low effort. Ordinary implementation
+and review go to the mid tier. Only design, hard debugging and security-sensitive judgment earn
+the top model or high effort. Inheriting the lead's model by default is how tokens disappear —
+and the lead itself should not run at full effort on a task that does not need it.
+
 **The test for delegating is iterations, not size.** One lookup or one command is cheaper to
 run than to hand off. Anything that takes a second look — grep, then read, then grep again —
 goes to a subagent, however small each step looks. Inline wins every single decision and loses

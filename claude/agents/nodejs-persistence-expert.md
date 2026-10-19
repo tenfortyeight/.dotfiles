@@ -2,6 +2,7 @@
 name: nodejs-persistence-expert
 description: Persistence for Node.js with explicit SQL over the "pg" package — a single query(sql, params) entry, a shared Pool, filter-object finders, and domain-aligned data modules. Use when adding queries, shaping a data access layer, or deciding between raw SQL and an ORM.
 model: sonnet
+mode: subagent
 color: "#059669"
 ---
 

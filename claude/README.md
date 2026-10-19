@@ -13,7 +13,7 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 | `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
 | `hooks/` | Eight enforcement hooks plus `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
-| `agents/` | Two stack-generic Node.js agents: error handling and persistence |
+| `agents/` | Two stack-generic Node.js agents: error handling and persistence. Written to load in both Claude Code and OpenCode: `mode: subagent` is read only by OpenCode, and OpenCode ignores the Claude-style `model: sonnet` alias, so keep both lines |
 
 ## settings.json is built, not linked
 
