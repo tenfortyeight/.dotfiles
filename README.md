@@ -126,6 +126,7 @@ optional — the shell and git both work with none of them present.
 | `~/.npmrc` | private package scope → registry mappings, and the auth token for them |
 | `~/.claude/settings.local.json` | Claude Code settings for this machine: job-specific permission allow rules, machine-specific hooks, model. `claude/link.sh` merges it into `~/.claude/settings.json`, so re-run that after editing — see [claude/README.md](claude/README.md#settingsjson-is-built-not-linked) |
 | `~/.claude/CLAUDE.local.md` | personal Claude Code instructions — anything about you rather than how you work. The shared `claude/CLAUDE.md` imports it last |
+| `~/.config/opencode/opencode.json` | opencode's `instructions` list, pointing at `~/.claude/CLAUDE.local.md` and `~/.claude/rules/*.md` by absolute path, so opencode gets the same machine-local instructions Claude Code does |
 | `~/.claude/rules/*.md` | further global instruction files, read into every session alongside `CLAUDE.md`. Machine-local on purpose: these machines are put to wildly different kinds of work, so the rules worth stating differ per machine — a shared copy would impose one machine's habits on all of them |
 
 **Keep tokens out of files.** Where a tool reads `${VAR}` from the environment

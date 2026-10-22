@@ -117,6 +117,23 @@ done
 
 prune
 
+# Other agent tools follow the same instructions and agents, so there is one
+# master to edit. Linked only where the tool's config dir already exists, so a
+# machine without the tool isn't handed a config dir for it. opencode reads
+# ~/.claude/CLAUDE.md and ~/.claude/skills on its own; Codex reads neither.
+tool_link() { # <target> <link>
+  local target="$1" dest="$2"
+  [ -d "$(dirname "$dest")" ] || return 0
+  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+    mv "$dest" "$dest.replaced-$(date +%Y%m%d-%H%M%S)"
+    warn "replaced real ${dest#"$HOME"/} (saved alongside it)"
+  fi
+  ln -sfn "$target" "$dest"
+  ok "${dest#"$HOME"/}"
+}
+tool_link "$CLAUDE_DIR/CLAUDE.md" "$HOME/.codex/AGENTS.md"
+tool_link "$CLAUDE_DIR/agents"    "$HOME/.config/opencode/agents"
+
 # peon-ping is installed out of band (a Homebrew formula, but NOT declared in this
 # repo's Brewfile) and is not tracked here. The hook entries tolerate its absence,
 # so nothing breaks on a machine without it.

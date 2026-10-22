@@ -15,6 +15,18 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
 | `agents/` | Two stack-generic Node.js agents: error handling and persistence. Written to load in both Claude Code and OpenCode: `mode: subagent` is read only by OpenCode, and OpenCode ignores the Claude-style `model: sonnet` alias, so keep both lines |
 
+## Other agent tools
+
+`~/.claude` is the master for opencode and Codex too. opencode reads
+`~/.claude/CLAUDE.md` and `~/.claude/skills` by itself; `link.sh` links
+`~/.config/opencode/agents` to `~/.claude/agents` and `~/.codex/AGENTS.md` to
+`~/.claude/CLAUDE.md`, each only if that tool's config dir exists. Codex does not
+follow `@` imports, so `CLAUDE.local.md` doesn't reach it.
+
+opencode resolves the agents' `model: sonnet` to nothing and runs them on the
+session model. Hooks, permissions and auto mode stay Claude-only — the deploy,
+SOPS and AWS-profile guards do not run in other tools.
+
 ## settings.json is built, not linked
 
 Claude Code has only one settings file that applies in every project,
