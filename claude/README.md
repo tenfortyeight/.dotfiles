@@ -19,9 +19,13 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 
 `~/.claude` is the master for opencode and Codex too. opencode reads
 `~/.claude/CLAUDE.md` and `~/.claude/skills` by itself; `link.sh` links
-`~/.config/opencode/agents` to `~/.claude/agents` and `~/.codex/AGENTS.md` to
-`~/.claude/CLAUDE.md`, each only if that tool's config dir exists. Codex does not
-follow `@` imports, so `CLAUDE.local.md` doesn't reach it.
+`~/.config/opencode/agents` to `~/.claude/agents`, and the four skills into
+`~/.codex/skills`, each only if that tool's config dir exists.
+
+Codex follows no `@` imports and reads no rules dir, so `link.sh` **builds**
+`~/.codex/AGENTS.md`: `CLAUDE.md`, then `~/.claude/rules/*.md`, then
+`CLAUDE.local.md`. Like `settings.json`, re-run `link.sh` after editing any of
+them.
 
 opencode resolves the agents' `model: sonnet` to nothing and runs them on the
 session model. Hooks, permissions and auto mode stay Claude-only — the deploy,
