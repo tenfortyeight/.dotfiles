@@ -238,8 +238,8 @@ finished work gets committed without waiting for a go-ahead.
 ## Tools
 
 - `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
-- `/simplify` — in the refactor step, and again before a PR.
-- `/scope` — for genuinely multi-step work with a fuzzy ask. Not for every task.
+- `/simplify` — once, before finishing or opening a PR (`/go` step 1), not in every TDD cycle.
+- `/scope` — only when I type it; never start it yourself.
 - `/checkpoint` — suggest proactively on long or risky sessions.
 
 ## Done

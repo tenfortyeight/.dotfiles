@@ -1,7 +1,7 @@
 ---
 name: go
 description: >
-  Use when the user types /go (outer pre-PR chain: verify → simplify →
+  Use when the user types /go (outer pre-PR chain: simplify → verify →
   independent check → commit → optional PR → optional notify) or /go tdd (inner
   red-green-refactor-commit cycles for bug/behavior work, then the outer chain). Never
   deploys, merges, or force-pushes.
@@ -13,7 +13,7 @@ user-invocable: true
 `/go` has two modes. Pick the one that matches where the user is in the work:
 
 - **Inner loop** (`/go tdd` or starting bug/behavior work) — drives one red→green→refactor→commit cycle.
-- **Outer chain** (`/go`, default) — finishing chain that runs verify → simplify → independent check → commit → optional PR → optional notify.
+- **Outer chain** (`/go`, default) — finishing chain that runs simplify → verify → independent check → commit → optional PR → optional notify.
 
 **Never deploys. Never merges PRs. Never force-pushes.** Those need the user's explicit go-ahead (CLAUDE.md, Environment safety).
 
@@ -33,7 +33,7 @@ Rationale: tight cycles keep each commit reviewable and give design feedback ear
 
 2. **Green.** Write the **minimum** code to make the test pass. Ugly is allowed. Don't generalize. Don't add features the test doesn't demand. Run the test; confirm it passes. Run the rest of the test suite; confirm nothing else regressed.
 
-3. **Refactor.** Tests stay green throughout. Invoke `/simplify` on the touched files. Look for: duplication, unclear names, leaky boundaries, dead code, accidental complexity. Re-run tests after each refactor step. If refactoring reveals a design problem ("this is hard to test"), fix the design — that is the feedback the test is giving.
+3. **Refactor.** Tests stay green throughout. Look for: duplication, unclear names, leaky boundaries, dead code, accidental complexity. Re-run tests after each refactor step. If refactoring reveals a design problem ("this is hard to test"), fix the design — that is the feedback the test is giving.
 
 4. **Commit.** One commit per cycle: the test and the code that makes it pass, together. Oneliner message with `git commit -m "..."` — no heredocs (the hook blocks them).
 
@@ -56,17 +56,15 @@ Run the steps in order. Each step gates the next: if a step surfaces a blocker, 
 ### 0. TDD sanity check (heuristic, fast)
 Before running the chain, glance at the unpushed commits on the current ref (`git log @{u}..HEAD` if upstream is set, else `git log -n 20`). If the diff fixes a bug or changes behavior but **no test files were added or modified across any of those commits**, write the missing test now. Docs, config and infra-only changes legitimately have none — note that in the report and move on.
 
-### 1. Verify (`/verify`)
-Invoke the `verify` skill. This runs file-type validators and environment/profile checks.
-
-**Gate:** Fix any `✗ blocker` and re-run. Stop only if the fix needs the user (wrong environment or profile, missing access). Warnings go in the report.
-
-### 2. Simplify (`/simplify`)
-Invoke the built-in `simplify` skill to review the changed code for reuse opportunities, quality issues, and inefficiencies, and to fix anything it finds.
+### 1. Simplify (`/simplify`)
+Invoke the built-in `simplify` skill once, over the whole change, to review it for reuse opportunities, quality issues, and inefficiencies, and to fix anything it finds.
 
 Then ask the scout's-honour question explicitly, because adding is easier to notice than removing: **what did this change make dead, and what can now be removed?** — superseded functions, flags no longer read, imports left orphaned, tests that pin behaviour that no longer exists. Remove it in this chain, not a later cleanup. If the diff is almost all additions, that is the prompt to look, not a verdict — greenfield legitimately adds. If the cleanup is genuinely bigger than this change, say so rather than leaving two truths behind.
 
-**Gate:** Let `simplify` apply its changes. After it finishes, re-run `/verify` quickly on the modified files to make sure nothing it changed introduced a validator failure. If it did, stop and report.
+### 2. Verify (`/verify`)
+Invoke the `verify` skill once, after simplify, so it covers what simplify changed too. This runs file-type validators and environment/profile checks.
+
+**Gate:** Fix any `✗ blocker` and re-run. Stop only if the fix needs the user (wrong environment or profile, missing access). Warnings go in the report.
 
 ### 3. Independent check
 
