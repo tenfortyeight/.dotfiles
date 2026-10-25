@@ -1,8 +1,8 @@
 ---
 name: review-squad
-description: Run architecture, security, QA, and devil's advocate review on changes
+description: Run architecture, security, QA, and devil's advocate review on changes — for wide or risky changes (/go step 3), or when the user asks
 allowed-tools:
-  - Task
+  - Agent
   - Bash
   - Read
   - Glob
@@ -18,7 +18,7 @@ Spawn 4 parallel review agents to critique the current changes. This catches iss
    - Run `git diff --cached` to see staged changes
    - Identify which files/areas are affected
 
-2. Then spawn these 4 agents IN PARALLEL using the Task tool:
+2. Then spawn these 4 agents IN PARALLEL using the Agent tool with `subagent_type: general-purpose`:
 
    **Architecture Agent:**
    - Does this fit the existing platform/codebase design patterns?

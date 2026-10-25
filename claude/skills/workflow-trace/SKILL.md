@@ -2,7 +2,7 @@
 name: workflow-trace
 description: Trace a GitHub workflow end-to-end across repos
 allowed-tools:
-  - Task
+  - Agent
   - Read
   - Glob
   - Grep
