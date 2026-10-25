@@ -109,6 +109,10 @@ Send a 3–5 line summary:
 
 No preamble.
 
+### 7. Tidy
+
+Once the work has merged, remove its worktree and branch. `~/.claude/hooks/git-tidy.sh` sweeps up any merged, clean worktree and branch left behind; it runs at every session start and can be run by hand.
+
 ## Arguments
 
 - `/go tdd` — run one inner red→green→refactor→commit cycle.

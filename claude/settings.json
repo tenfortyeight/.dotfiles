@@ -109,6 +109,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "$HOME/.claude/hooks/git-tidy.sh",
+            "timeout": 60
+          },
+          {
+            "type": "command",
             "command": "[ -x \"$HOME/.claude/hooks/peon-ping/peon.sh\" ] && \"$HOME/.claude/hooks/peon-ping/peon.sh\" || true",
             "timeout": 10
           }

@@ -11,7 +11,7 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 |---|---|
 | `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", working hands-off, the lead as coordinator, sharing repos and environments with other sessions, definition of done |
 | `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
-| `hooks/` | Eight enforcement hooks plus `test-guards.sh` |
+| `hooks/` | Eight enforcement hooks, `git-tidy.sh`, and `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
 | `agents/` | Two stack-generic Node.js agents: error handling and persistence. Written to load in both Claude Code and OpenCode: `mode: subagent` is read only by OpenCode, and OpenCode ignores the Claude-style `model: sonnet` alias, so keep both lines |
 
@@ -107,6 +107,7 @@ configured and enforces nothing. Every hook here reads stdin with `jq`.
 | `terraform-push-reminder` | PreToolUse | Warns that CI is linux/amd64 before pushing `.tf` changes |
 | `post-edit-validate` | PostToolUse | terraform fmt / yamllint / shellcheck / kustomize / JSON validity |
 | `verifier-gate` | Stop | Blocks ending a turn on substantive unverified source changes |
+| `git-tidy` | SessionStart | Not a guard: removes merged, clean, idle worktrees, merged branches (your own on the remote) and checkpoints older than 14 days |
 
 Whether to deploy at all is left to auto mode and the instructions; the guard
 only makes sure what gets deployed is what is on origin.

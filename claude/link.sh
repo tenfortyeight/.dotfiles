@@ -102,7 +102,7 @@ build_settings
 
 for f in sops-guard deploy-ref-guard \
          aws-profile-guard commit-hygiene terraform-push-reminder \
-         stale-base-guard post-edit-validate verifier-gate test-guards; do
+         stale-base-guard post-edit-validate verifier-gate git-tidy test-guards; do
   chmod +x "$HERE/hooks/$f.sh" 2>/dev/null || true
   link "hooks/$f.sh" "hooks/$f.sh"
 done
