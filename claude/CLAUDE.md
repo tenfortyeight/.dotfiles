@@ -129,7 +129,9 @@ I work across several terminals and environments at once.
 - Always pass explicit profile/context flags — never rely on defaults.
 - Never apply infrastructure changes to production locally. Use CI/CD.
 - State the target environment before running a mutating command, so I can stop you.
-- Never deploy, merge, release, tag, force-push or `reset --hard` without me saying so.
+- Never deploy, merge, release, tag, force-push or `reset --hard` without me saying so. A
+  deploy go-ahead can come at kickoff (`/scope`), for that piece of work: small and contained
+  ships once verified, and you tell me what went out and when.
 
 ## What to test
 
@@ -235,7 +237,7 @@ finished work gets committed without waiting for a go-ahead.
 
 - `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
 - `/simplify` — once, before finishing or opening a PR (`/go` step 1), not in every TDD cycle.
-- `/scope` — only when I type it; never start it yourself.
+- `/scope` — the kickoff interview: run it yourself when I start something new and the ask is loose.
 - `/checkpoint` — suggest proactively on long or risky sessions.
 
 ## Done

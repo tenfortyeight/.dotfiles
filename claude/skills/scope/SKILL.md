@@ -1,83 +1,69 @@
 ---
 name: scope
 description: >
-  Use when the user types /scope: lock in a numbered checklist of every
-  in-scope deliverable — including implied items — and get user approval
-  before any code changes.
+  Kickoff interview. Use it yourself when the user starts something new — a
+  feature, an idea, a fresh piece of work — and the ask leaves open what done
+  looks like; also when the user types /scope. One short round of multiple-choice
+  questions with your recommendation pre-selected, then a brief, then
+  autonomous work. Not for a precise ask, a bug with a clear repro, a question,
+  or work already under way.
 user-invocable: true
-disable-model-invocation: true
 ---
 
-# /scope — Lock In the Full Scope Before Coding
+# /scope — Kickoff Interview
 
-Multi-step plans drift when scope is implicit. `/scope` forces an explicit, numbered checklist *before* any code changes, gets the user to approve it, and uses it as the cutoff so the work doesn't end half-done.
+The start of new work is where the ask is loosest and patience shortest. A
+loose start costs a dozen corrections later. Spend one short round of
+questions up front, then work without stopping.
 
-## When to run
+## 1. Do the homework first
 
-Only when the user types `/scope`. Never start it on your own: stopping for approval
-is what hands-off work is meant to avoid (CLAUDE.md, Working hands-off).
+Infer everything you can before asking anything: the repo's CLAUDE.md and
+docs (product, plans, decisions), memory, the board or issue, recent commits,
+and the repo's product-owner doc if it has one. A question whose answer is
+written down somewhere is a question you should not ask.
 
-## How to run
+## 2. Ask one round
 
-### 1. Enumerate everything
+Use AskUserQuestion: at most four questions, each with two to four concrete
+options and your recommendation first, marked "(Recommended)". Ask in the
+user's terms — outcomes and the people it is for — not implementation.
+Implementation is yours to decide.
 
-Read the user's ask and produce a numbered checklist that includes:
+Pick the questions that would most change the work. Usually:
 
-- **Stated items** — what the user explicitly mentioned.
-- **Implied items** — what's necessary to actually finish the task (tests, docs, migrations, deploys, issue updates, follow-up cleanups, regression checks). Be explicit that these are *implied* so the user can confirm or trim.
-- **Out of scope** — a short list of what you're *not* doing, to surface assumptions.
+- **What done looks like** — the outcome, and who notices it.
+- **In and out** — the one or two things that could plausibly be in either.
+- **How hands-on** — whether the result deploys once verified, or waits for a
+  go-ahead. Recommend from the change: small and contained deploys once
+  verified; wide or sensitive (migrations, data deletion, auth, payments,
+  privacy or legal text, infrastructure, secrets) waits. Skip this question
+  when nothing will deploy.
 
-Format:
+Ask a second round only when an answer opens a real fork. If the user answers
+"just do it" or skips, take the recommendations.
+
+## 3. Write the brief and start
+
+Five to ten lines, then begin at once — no approval wait; the user can
+interrupt:
 
 ```
-## Scope for: <one-line task summary>
-
-### In scope
-1. <stated item>
-2. <stated item>
-3. <implied: tests for X> ← inferred
-4. <implied: update Grafana panel referencing renamed metric> ← inferred
-5. ...
-
-### Out of scope (please confirm)
-- <thing I'm NOT doing>
-- <thing I'm NOT doing>
-
-### Open questions
-- <anything I need clarified before starting>
+## Brief: <one line>
+Done means: <the observable outcome>
+In: <items, including implied ones: tests, docs, migrations, cleanup>
+Out: <what this is not>
+Deploy: <once verified | waits for your go-ahead — and why>
+Decided by me: <calls made from the homework, so they can be overruled>
 ```
 
-### 2. Wait for approval
-
-**Do not start coding.** Ask the user explicitly: "Approve this scope, or tell me what to add/remove/clarify?"
-
-If the user adds/removes items, update the checklist and re-show. Only proceed once they've said yes (or equivalent).
-
-### 3. Treat the list as the cutoff
-
-Once approved:
-
-- The checklist *is* the definition of done. Don't stop early ("9 of 12 commits, waiting for next prompt") — work through every item.
-- If you discover a new item mid-flight that should be in scope, surface it to the user before silently adding it.
-- If something turns out to be infeasible or unwise, surface it and ask for direction — don't drop it silently.
-
-### 4. Track progress
-
-Mirror the checklist into TaskCreate / TaskUpdate so progress is visible. Mark items completed as they finish, not in batches.
+The brief is the cutoff: finish every item on it, and don't stop at most of
+them. Something new that belongs in it gets added and named in the report;
+something infeasible gets surfaced, not dropped. Put the brief at the top of
+every subagent brief so the work stays on it.
 
 ## Authoritative inventories, not estimates
 
-When the scope involves "all the X that need Y" (cleanup, backfill, migration count):
-
-- **Query the source of truth** — `gh issue list`, `git log`, a SQL count, `kubectl get`, `find`. Don't estimate from a sample.
-- Include the exact count or the query you used in the checklist, so the user can sanity-check.
-
-## What /scope does NOT do
-
-- Does not modify code, files, or git state.
-- Does not commit or deploy.
-- Does not promise the work is small — its job is to make the work *visible*, even when it's larger than the user expected.
-
-## Pairs naturally with
-
-- `/go` (and `/go tdd`) — `/scope` defines what to ship; `/go` ships each slice via TDD; `/checkpoint` saves state if the session goes long.
+When the work is "all the X that need Y", query the source of truth (`gh issue
+list`, `git log`, a count, `find`) and put the number or the query in the
+brief.

@@ -12,7 +12,7 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 | `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", working hands-off, the lead as coordinator, sharing repos and environments with other sessions, definition of done |
 | `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
 | `hooks/` | Eight enforcement hooks, `git-tidy.sh`, and `test-guards.sh` |
-| `skills/` | `go` (pre-PR chain), `scope`, `verify`, `checkpoint` |
+| `skills/` | `go` (pre-PR chain), `scope` (kickoff interview), `verify`, `checkpoint` |
 | `agents/` | Two stack-generic Node.js agents: error handling and persistence. Written to load in both Claude Code and OpenCode: `mode: subagent` is read only by OpenCode, and OpenCode ignores the Claude-style `model: sonnet` alias, so keep both lines |
 
 ## Other agent tools
