@@ -119,7 +119,7 @@ configured and enforces nothing. Every hook here reads stdin with `jq`.
 | `terraform-push-reminder` | PreToolUse | Warns that CI is linux/amd64 before pushing `.tf` changes |
 | `post-edit-validate` | PostToolUse | terraform fmt / yamllint / shellcheck / kustomize / JSON validity |
 | `verifier-gate` | Stop | Blocks ending a turn on substantive unverified source changes |
-| `git-tidy` | SessionStart | Not a guard: removes merged, clean, idle worktrees, merged branches (your own on the remote) and checkpoints older than 14 days |
+| `git-tidy` | SessionStart | Not a guard: removes merged, clean, idle worktrees, merged branches (your own on the remote) and checkpoints older than 14 days; started in a folder of repos, does this for each repo one level down |
 
 Whether to deploy at all is left to auto mode and the instructions; the guard
 only makes sure what gets deployed is what is on origin.

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# SessionStart: clear away merged worktrees and branches in the current repo.
+# SessionStart: clear away merged worktrees and branches in the current repo,
+# or, when the session starts in a folder of repos, in each repo directly
+# below it (one level; linked worktrees are left to the repo that owns them).
 #
 # Sessions were told to clean up after merging and kept leaving worktrees and
 # branches behind anyway, so this does it for them. Safe to run by hand too.
@@ -12,16 +14,16 @@
 #   - your own remote branches merged into origin/<default>, never long-lived ones
 #   - .claude/checkpoints/*.md older than 14 days
 #
-# Quiet unless it removed something; never fails the session.
-set -euo pipefail
+# One line, and only if it removed something or a repo could not be tidied;
+# never fails the session.
+set -Eeuo pipefail   # -E: the ERR trap reaches functions and subshells too
 trap 'echo "git-tidy: stopped early at line $LINENO"; exit 0' ERR
 
 IDLE_MINUTES=60
+BUDGET_SECONDS=90   # stop starting new repos after this; each fetch/push has its own timeout
 # Branches that live on even when merged: deploy, release and integration lines.
 LONG_LIVED='^(main|master|develop|dev|staging|stage|production|prod|release.*|gh-pages|HEAD)$'
-
-git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
-git remote get-url origin >/dev/null 2>&1 || exit 0
+SESSION_DIR="$(pwd -P)"
 
 with_timeout() {
   local t
@@ -29,17 +31,35 @@ with_timeout() {
   if [ -n "$t" ]; then "$t" 20 "$@"; else "$@"; fi
 }
 
-with_timeout git fetch --quiet --prune origin 2>/dev/null || { echo "git-tidy: fetch failed, skipped"; exit 0; }
+# A linked worktree shares another repo's history; that repo tidies it.
+is_main_checkout() { # <dir>
+  [ "$(git -C "$1" rev-parse --absolute-git-dir 2>/dev/null)" = \
+    "$(git -C "$1" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" ]
+}
 
-default="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)"
-default="${default#origin/}"
-if [ -z "$default" ]; then
-  for b in main master; do
-    git show-ref --quiet --verify "refs/remotes/origin/$b" && default="$b" && break
+repos_to_tidy() {
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "$PWD"
+    return
+  fi
+  local d
+  for d in "$PWD"/*/; do
+    d="${d%/}"
+    if [ -e "$d/.git" ] && is_main_checkout "$d"; then echo "$d"; fi
   done
-fi
-[ -n "$default" ] || exit 0
-base="origin/$default"
+}
+
+default_branch() {
+  local d b
+  d="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)"
+  d="${d#origin/}"
+  if [ -z "$d" ]; then
+    for b in main master; do
+      if git show-ref --quiet --verify "refs/remotes/origin/$b"; then d="$b"; break; fi
+    done
+  fi
+  echo "$d"
+}
 
 merged() { git merge-base --is-ancestor "$1" "$base" 2>/dev/null; }
 
@@ -52,59 +72,99 @@ recently_touched() { # <worktree path>
 
 removable_worktree() { # <path> <head>
   [ -d "$1" ] || return 1
-  case "$(pwd -P)/" in "$1"/*) return 1 ;; esac   # never the one this session is in
+  case "$SESSION_DIR/" in "$1"/*) return 1 ;; esac   # never the one this session is in
   merged "$2" || return 1
   ! recently_touched "$1" || return 1   # before status, which can rewrite the index
   [ -z "$(git -C "$1" status --porcelain 2>/dev/null || echo dirty)" ]
 }
 
-worktrees=0
-main_wt="" path="" head="" locked=""
-while IFS= read -r line; do
-  case "$line" in
-    "worktree "*) path="${line#worktree }"; head=""; locked=""
-                  [ -n "$main_wt" ] || main_wt="$path" ;;
-    "HEAD "*)     head="${line#HEAD }" ;;
-    locked*)      locked=1 ;;
-    "")           if [ "$path" != "$main_wt" ] && [ -z "$locked" ] && [ -n "$head" ] &&
-                     removable_worktree "$path" "$head" &&
-                     git worktree remove "$path" 2>/dev/null; then
-                    worktrees=$((worktrees + 1))
-                  fi
-                  path="" ;;
-  esac
-done < <(git worktree list --porcelain; echo)
-git worktree prune
+tidy_worktrees() {
+  local main_wt="" path="" head="" locked="" line
+  while IFS= read -r line; do
+    case "$line" in
+      "worktree "*) path="${line#worktree }"; head=""; locked=""
+                    [ -n "$main_wt" ] || main_wt="$path" ;;
+      "HEAD "*)     head="${line#HEAD }" ;;
+      locked*)      locked=1 ;;
+      "")           if [ "$path" != "$main_wt" ] && [ -z "$locked" ] && [ -n "$head" ] &&
+                       removable_worktree "$path" "$head" &&
+                       git worktree remove "$path" 2>/dev/null; then
+                      worktrees=$((worktrees + 1))
+                    fi
+                    path="" ;;
+    esac
+  done < <(git worktree list --porcelain; echo)
+  git worktree prune
+}
 
-checked_out="$(git worktree list --porcelain | sed -n 's|^branch refs/heads/||p')"
-branches=0
-while IFS= read -r b; do
-  [ -n "$b" ] || continue
-  [[ "$b" =~ $LONG_LIVED ]] && continue
-  grep -qxF "$b" <<<"$checked_out" && continue
-  git branch -d --quiet "$b" >/dev/null 2>&1 && branches=$((branches + 1))
-done < <(git branch --merged "$base" --format='%(refname:short)')
+tidy_branches() {
+  local checked_out b
+  checked_out="$(git worktree list --porcelain | sed -n 's|^branch refs/heads/||p')"
+  while IFS= read -r b; do
+    [ -n "$b" ] || continue
+    [[ "$b" =~ $LONG_LIVED ]] && continue
+    grep -qxF "$b" <<<"$checked_out" && continue
+    if git branch -d --quiet "$b" >/dev/null 2>&1; then branches=$((branches + 1)); fi
+  done < <(git branch --merged "$base" --format='%(refname:short)')
+}
 
 # Only your own: a merged branch someone else pushed is theirs to delete.
-me="$(git config user.email || true)"
-gone=()
-while IFS= read -r ref; do
-  b="${ref#origin/}"
-  [ "$b" != "$default" ] && [ "$ref" != origin ] || continue
-  [[ "$b" =~ $LONG_LIVED ]] && continue
-  [ -n "$me" ] && [ "$(git log -1 --format=%ae "$ref")" = "$me" ] || continue
-  gone+=("$b")
-done < <(git branch -r --merged "$base" --format='%(refname:short)' | grep '^origin/' || true)
-remotes=0
-if [ "${#gone[@]}" -gt 0 ] && with_timeout git push --quiet origin --delete "${gone[@]}" 2>/dev/null; then
-  remotes="${#gone[@]}"
-fi
+tidy_remote_branches() {
+  local me ref b gone=()
+  me="$(git config user.email || true)"
+  while IFS= read -r ref; do
+    b="${ref#origin/}"
+    [ "$b" != "$default" ] && [ "$ref" != origin ] || continue
+    [[ "$b" =~ $LONG_LIVED ]] && continue
+    [ -n "$me" ] && [ "$(git log -1 --format=%ae "$ref")" = "$me" ] || continue
+    gone+=("$b")
+  done < <(git branch -r --merged "$base" --format='%(refname:short)' | grep '^origin/' || true)
+  if [ "${#gone[@]}" -gt 0 ] && with_timeout git push --quiet origin --delete "${gone[@]}" 2>/dev/null; then
+    remotes="${#gone[@]}"
+  fi
+}
 
-checkpoints=0
-dir="$(git rev-parse --show-toplevel)/.claude/checkpoints"
-if [ -d "$dir" ]; then
-  checkpoints="$(find "$dir" -maxdepth 1 -name '*.md' -type f -mtime +14 -print -delete | wc -l | tr -d ' ')"
-fi
+tidy_checkpoints() {
+  local dir
+  dir="$(git rev-parse --show-toplevel)/.claude/checkpoints"
+  if [ -d "$dir" ]; then
+    checkpoints="$(find "$dir" -maxdepth 1 -name '*.md' -type f -mtime +14 -print -delete | wc -l | tr -d ' ')"
+  fi
+}
 
-[ $((worktrees + branches + remotes + checkpoints)) -gt 0 ] || exit 0
-echo "git-tidy: removed $worktrees worktree(s), $branches branch(es), $remotes remote branch(es), $checkpoints old checkpoint(s)"
+# Runs in a subshell so one repo's failure cannot stop the others.
+# Prints "<worktrees> <branches> <remotes> <checkpoints>", or a reason it gave up.
+tidy_repo() { # <dir>
+  (
+    set -e
+    trap 'echo "stopped at line $LINENO"; exit 0' ERR
+    cd "$1"
+    worktrees=0 branches=0 remotes=0 checkpoints=0
+    git remote get-url origin >/dev/null 2>&1 || { echo "0 0 0 0"; exit 0; }
+    with_timeout git fetch --quiet --prune origin 2>/dev/null || { echo "fetch failed"; exit 0; }
+    default="$(default_branch)"
+    [ -n "$default" ] || { echo "0 0 0 0"; exit 0; }
+    base="origin/$default"
+    tidy_worktrees
+    tidy_branches
+    tidy_remote_branches
+    tidy_checkpoints
+    echo "$worktrees $branches $remotes $checkpoints"
+  )
+}
+
+worktrees=0 branches=0 remotes=0 checkpoints=0 problems=""
+while IFS= read -r repo; do
+  if [ "$SECONDS" -ge "$BUDGET_SECONDS" ]; then problems="$problems; out of time at ${repo##*/}"; break; fi
+  result="$(tidy_repo "$repo")"
+  if [[ "$result" =~ ^[0-9]+\ [0-9]+\ [0-9]+\ [0-9]+$ ]]; then
+    read -r w b r c <<<"$result"
+    worktrees=$((worktrees + w)) branches=$((branches + b))
+    remotes=$((remotes + r)) checkpoints=$((checkpoints + c))
+  else
+    problems="$problems; ${repo##*/}: $result"
+  fi
+done < <(repos_to_tidy)
+
+[ $((worktrees + branches + remotes + checkpoints)) -gt 0 ] || [ -n "$problems" ] || exit 0
+echo "git-tidy: removed $worktrees worktree(s), $branches branch(es), $remotes remote branch(es), $checkpoints old checkpoint(s)$problems"
