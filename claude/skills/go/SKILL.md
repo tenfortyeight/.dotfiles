@@ -35,7 +35,7 @@ Rationale: tight cycles keep each commit reviewable and give design feedback ear
 
 3. **Refactor.** Tests stay green throughout. Invoke `/simplify` on the touched files. Look for: duplication, unclear names, leaky boundaries, dead code, accidental complexity. Re-run tests after each refactor step. If refactoring reveals a design problem ("this is hard to test"), fix the design — that is the feedback the test is giving.
 
-4. **Commit.** Small, focused, oneliner message. Typically two commits per cycle (test, then implementation), or one commit if they're tightly coupled. Use `git commit -m "..."` — no heredocs (the hook blocks them).
+4. **Commit.** One commit per cycle: the test and the code that makes it pass, together. Oneliner message with `git commit -m "..."` — no heredocs (the hook blocks them).
 
 ### Gates
 
@@ -86,11 +86,8 @@ This is the rule for review; CLAUDE.md "Done" points here. Review asks "is this 
 **Gate:** On FAIL, fix and re-check — do not argue with it from memory. Do not tell the user the work is done until it returns PASS. Then record the receipt, which also satisfies the `verifier-gate` Stop hook:
 `mkdir -p "$(git rev-parse --git-dir)/claude-gates" && echo "<one-line evidence>" > "$(git rev-parse --git-dir)/claude-gates/verify-$(git rev-parse HEAD)"`
 
-### 4. Commit in chunks
-If nothing is blocking:
-- Stage and commit in **small, focused chunks** — do not batch. The user's workflow preference is reviewable history.
-- Use simple oneliner commit messages: `git commit -m "message"`. No heredocs, no `$(cat ...)` — the hooks will block these anyway.
-- One logical change per commit. Refactors separate from behavior changes separate from test additions.
+### 4. Commit
+If nothing is blocking, commit anything still uncommitted: one logical change per commit, oneliner message with `git commit -m "message"`. No heredocs, no `$(cat ...)` — the hooks block these anyway.
 
 ### 5. Optional PR
 Only if the user explicitly asked for a PR (via `/go pr`, `/go --pr`, or similar). On trunk-based workflows (working directly on unprotected `main`) the chain typically ends after step 4 with the commits pushed — no PR needed. Tell the user the work is ready / pushed.
