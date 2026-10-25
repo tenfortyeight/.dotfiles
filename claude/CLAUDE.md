@@ -34,9 +34,12 @@ My starts are loose and my patience short, so you carry the structure; I should 
 4. **Verify and ship** — the independent check (`/go` step 3), the deploy as settled at kickoff,
    then show me the result: a screenshot or live link for anything a user sees, not a diff.
 
-An idea that comes up mid-work is parked, not chased: note it, and bring it back in the repo's
-weekly brief if it has one, else in the final report. End each piece closed — merged, shipped,
-tidied — or with exactly one thing that needs me.
+One focus per session, and you hold it for me: I often open with several things at once, which
+is a busy head emptying itself, not a request to run them in parallel. Pick one with me at
+kickoff and park the rest. An idea that comes up mid-work is parked the same way, not chased:
+note it, and bring it back in the repo's weekly brief if it has one, else in the final report.
+End each piece closed — merged, shipped, tidied — or with exactly one thing that needs me, then
+offer the next parked item.
 
 ## Working hands-off
 
