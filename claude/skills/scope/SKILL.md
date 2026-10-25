@@ -1,11 +1,11 @@
 ---
 name: scope
 description: >
-  Use when the user types /scope, or proactively at the start of any
-  multi-step task (3+ commits, multiple files, or a fuzzy ask) to lock
-  in a numbered checklist of every in-scope deliverable — including
-  implied items — and get user approval before any code changes.
+  Use when the user types /scope: lock in a numbered checklist of every
+  in-scope deliverable — including implied items — and get user approval
+  before any code changes.
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # /scope — Lock In the Full Scope Before Coding
@@ -14,14 +14,8 @@ Multi-step plans drift when scope is implicit. `/scope` forces an explicit, numb
 
 ## When to run
 
-- User types `/scope`.
-- **Proactively run** at the start of any task that:
-  - Touches 3+ files, OR
-  - Implies multiple commits, OR
-  - Spans multiple repos / services, OR
-  - Has fuzzy edges (e.g. "clean up X", "migrate Y", "fix the issues in Z").
-
-Trivial tasks (one-line typo fix, single config tweak) skip this — use judgment.
+Only when the user types `/scope`. Never start it on your own: stopping for approval
+is what hands-off work is meant to avoid (CLAUDE.md, Working hands-off).
 
 ## How to run
 
