@@ -5,7 +5,7 @@ description: >
   feature, an idea, a fresh piece of work — and the ask leaves open what done
   looks like; also when the user types /scope. One short round of multiple-choice
   questions with your recommendation pre-selected, then a brief, then
-  autonomous work. A "help me sort this out" opening that mixes several topics,
+  autonomous work, one focus per session. A "help me sort this out" opening that mixes several topics,
   questions and wishes counts as a loose start: answer the factual questions
   inside the interview, not in a report before it. Not for a single precise
   ask, a bug with a clear repro, a lone question, or work already under way.
@@ -25,7 +25,25 @@ docs (product, plans, decisions), memory, the board or issue, recent commits,
 and the repo's product-owner doc if it has one. A question whose answer is
 written down somewhere is a question you should not ask.
 
-## 2. Ask one round
+## 2. One thing at a time
+
+The user often opens with several things at once — that is how a busy head
+empties itself, not a request to do them all in parallel. The user's focus is
+the scarce resource; hold it for them.
+
+- The first question picks **the one thing this session is for**. Recommend
+  the one that matters most now (what unblocks income, users or a deadline
+  beats what is nice), and say in a clause why.
+- Every other topic is **parked**, not dropped: one line each in the repo's
+  parked list if it has one (else keep it for the final report), named back
+  in a single line so the user sees nothing was lost. Answer a parked topic's
+  quick factual question in a line if it costs nothing; don't start its work.
+- When the focus is done, offer the **next one** from the parked items as the
+  single ask at the end: "Next in line: X — start it?"
+- Mid-session, a new topic from the user is parked the same way, with one line
+  saying so, and the work carries on. Switch only when the user says switch.
+
+## 3. Ask one round
 
 Use AskUserQuestion: at most four questions, each with two to four concrete
 options and your recommendation first, marked "(Recommended)". Ask in the
@@ -50,7 +68,7 @@ in prose for the user to write an answer to.
 Ask a second round only when an answer opens a real fork. If the user answers
 "just do it" or skips, take the recommendations.
 
-## 3. Write the brief and start
+## 4. Write the brief and start
 
 Five to ten lines, then begin at once — no approval wait; the user can
 interrupt:
