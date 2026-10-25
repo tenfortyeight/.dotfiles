@@ -14,6 +14,7 @@
 # is ever moved or copied in — .npmrc especially, which is the conventional
 # place for a registry token.
 *.local
+*.local.*
 .zshrc.local
 .gitconfig.work
 .npmrc
