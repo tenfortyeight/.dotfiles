@@ -5,8 +5,10 @@ description: >
   feature, an idea, a fresh piece of work — and the ask leaves open what done
   looks like; also when the user types /scope. One short round of multiple-choice
   questions with your recommendation pre-selected, then a brief, then
-  autonomous work. Not for a precise ask, a bug with a clear repro, a question,
-  or work already under way.
+  autonomous work. A "help me sort this out" opening that mixes several topics,
+  questions and wishes counts as a loose start: answer the factual questions
+  inside the interview, not in a report before it. Not for a single precise
+  ask, a bug with a clear repro, a lone question, or work already under way.
 user-invocable: true
 ---
 
@@ -39,6 +41,11 @@ Pick the questions that would most change the work. Usually:
   verified; wide or sensitive (migrations, data deletion, auth, payments,
   privacy or legal text, infrastructure, secrets) waits. Skip this question
   when nothing will deploy.
+
+Answer the user's factual questions in a few plain lines just before the
+questions — the homework already has them. Every decision you need from the
+user goes into the questions as options; never leave one as an open question
+in prose for the user to write an answer to.
 
 Ask a second round only when an answer opens a real fork. If the user answers
 "just do it" or skips, take the recommendations.
