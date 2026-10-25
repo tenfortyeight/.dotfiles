@@ -19,6 +19,9 @@ Roll forward, not back — fix by moving forward, not by reverting.
 - A design conversation is not a go-ahead, and an aside is not a task. When I think out loud, or
   park something so it is in context for later, record it and leave it. Build when I say build.
 - For GitHub workflows, trace the full flow end-to-end so steps don't fall through the cracks.
+- Started in a folder above several repos? Before working in a child repo, read its `CLAUDE.md`
+  and its memory index (`~/.claude/projects/<repo path, / as ->/memory/MEMORY.md`): a child's
+  memory never loads from the parent, and its `.claude/settings.json` hooks don't apply.
 
 ## How a piece of work runs
 
