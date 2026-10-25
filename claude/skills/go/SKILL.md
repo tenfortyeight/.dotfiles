@@ -1,8 +1,8 @@
 ---
 name: go
 description: >
-  Use when the user types /go (outer pre-PR chain: verify → simplify → review →
-  adversarial verify → commit → optional PR → optional notify) or /go tdd (inner
+  Use when the user types /go (outer pre-PR chain: verify → simplify →
+  independent check → commit → optional PR → optional notify) or /go tdd (inner
   red-green-refactor-commit cycles for bug/behavior work, then the outer chain). Never
   deploys, merges, or force-pushes.
 user-invocable: true
@@ -13,7 +13,7 @@ user-invocable: true
 `/go` has two modes. Pick the one that matches where the user is in the work:
 
 - **Inner loop** (`/go tdd` or starting bug/behavior work) — drives one red→green→refactor→commit cycle.
-- **Outer chain** (`/go`, default) — finishing chain that runs verify → simplify → review → adversarial verify → commit → optional PR → optional notify.
+- **Outer chain** (`/go`, default) — finishing chain that runs verify → simplify → independent check → commit → optional PR → optional notify.
 
 **Never deploys. Never merges PRs. Never force-pushes.** Those need the user's explicit go-ahead (CLAUDE.md, Environment safety).
 
@@ -68,35 +68,23 @@ Then ask the scout's-honour question explicitly, because adding is easier to not
 
 **Gate:** Let `simplify` apply its changes. After it finishes, re-run `/verify` quickly on the modified files to make sure nothing it changed introduced a validator failure. If it did, stop and report.
 
-### 3. Review squad
-Spawn the review-squad agents (architecture, security, QA, devil's-advocate) **in parallel** via the Agent tool with `subagent_type: general-purpose` — Plan agents go idle without responding to messages.
+### 3. Independent check
 
-- Architecture → does this fit the platform design? Patterns consistent across repos?
-- Security → secrets exposure, input validation, auth boundaries, OWASP concerns
-- QA → testability, missing coverage, boundary conditions
-- Devil's advocate → "what breaks?" — race conditions, partial failures, rollback scenarios
+This is the rule for review; CLAUDE.md "Done" points here. Review asks "is this good code?". This asks "is this claim actually true?" — the failure mode that has cost the most rework.
 
-**Gate:** Consolidate findings by severity:
-- **Blockers** (critical bugs, security issues, architectural violations) → fix them and re-review. Stop only if a fix needs the user's decision.
-- **Warnings** → fix the ones in scope; list the rest in the report with a reason.
-- **Suggestions** → include in the report, don't block.
+**Always:** spawn **one fresh general-purpose agent** that did not write the change. Give it ONLY the user's original ask and the raw diff. **Never** pass it your summary, your reasoning, or your conclusion — a checker that reads your reasoning re-derives your mistakes. Instruct it to:
 
-### 3.5 Adversarial verify (do NOT skip)
+- Confirm **every** part of the ask is met, not most of it.
+- Prove it **empirically** — run the tests, the build, the real thing; query the live source for any metric, field, endpoint, model or price — not by reading code.
+- Return PASS/FAIL with pasted evidence.
 
-Review asks "is this good code?". This asks "is this claim actually true?" — the failure mode that has cost the most rework.
+**Only when the change is wide or distributed, or touches auth, payments, data deletion, a migration or a cross-service contract** (or the user asks), go further:
 
-Spawn **one fresh general-purpose agent** and give it ONLY the user's original requirement and the raw diff. **Never** pass it your summary, your reasoning, or your conclusion — a verifier that reads your reasoning re-derives your mistakes. Instruct it to:
+- Make the check adversarial: tell the agent to assume the change is subtly wrong, to confirm datasource/query-language compatibility (a Prometheus query against a Loki datasource has shipped before), and to grep for leftover legacy paths and dead flags.
+- Run the review squad alongside it — architecture, security, QA, devil's advocate — **in parallel** via the Agent tool with `subagent_type: general-purpose` (Plan agents go idle without responding). Fix blockers and re-review; fix in-scope warnings and list the rest with a reason; report suggestions without blocking.
 
-- Assume the implementation is subtly wrong and prove correctness **empirically**, not by reading code.
-- Query live systems. Confirm every metric, field, endpoint, model and price it touches actually exists by hitting the real API — never a cached table.
-- Confirm datasource/query-language compatibility (a Prometheus query against a Loki datasource has shipped before).
-- Grep for leftover legacy paths, dead flags, superseded implementations, orphaned tests.
-- Confirm **every** acceptance criterion is met, not most of them.
-
-**Gate:** It returns PASS/FAIL with pasted evidence. On FAIL, fix and re-verify — do not argue with it from memory. Do not tell the user the work is done until it returns PASS. Then record:
+**Gate:** On FAIL, fix and re-check — do not argue with it from memory. Do not tell the user the work is done until it returns PASS. Then record the receipt, which also satisfies the `verifier-gate` Stop hook:
 `mkdir -p "$(git rev-parse --git-dir)/claude-gates" && echo "<one-line evidence>" > "$(git rev-parse --git-dir)/claude-gates/verify-$(git rev-parse HEAD)"`
-
-This step also runs automatically: `verifier-gate.sh` (a Stop hook) blocks the end of any turn with substantive unverified source changes, so it happens whether or not `/go` was typed.
 
 ### 4. Commit in chunks
 If nothing is blocking:
@@ -120,7 +108,7 @@ If `.claude/notify` exists in the repo root, read it and follow it. Shape: blank
 and `#` comments are ignored; the first two remaining lines are a channel (e.g. `slack`)
 and a target id. Send a 3–5 line summary:
 - What was changed (one line)
-- Verify / review / verifier outcomes
+- Verify / check outcomes
 - Commits made, PR link if created
 - Anything that needs their attention
 

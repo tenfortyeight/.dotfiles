@@ -240,7 +240,6 @@ finished work gets committed without waiting for a go-ahead.
 - `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
 - `/simplify` — in the refactor step, and again before a PR.
 - `/scope` — for genuinely multi-step work with a fuzzy ask. Not for every task.
-- Review squad — `/go` step 3 (architecture, security, QA, devil's-advocate agents in parallel). Worth running on its own when a change is wide or distributed. Not a gate.
 - `/checkpoint` — suggest proactively on long or risky sessions.
 
 ## Done
@@ -248,9 +247,10 @@ finished work gets committed without waiting for a go-ahead.
 Done means the behaviour works and you have seen it work: checks run, output pasted, or the
 real thing exercised. End to end means the whole arc: merged, shipped where I've authorized the
 deploy, seen working live, tracking issue closed, worktree removed. Before calling it done, have
-an agent that didn't write the change check the claim against the original ask — `/go` step 3.5
-is that check. If part is unfinished, say plainly what and why — never report something as
-working when you haven't watched it work.
+one agent that didn't write the change check the result against the original ask. `/go` step 3
+is that check, and says when a change is risky enough for the full review squad. If part is
+unfinished, say plainly what and why — never report something as working when you haven't
+watched it work.
 
 ## This machine
 
