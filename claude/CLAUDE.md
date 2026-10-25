@@ -217,11 +217,7 @@ live Prometheus endpoint before committing a panel.
 
 ## Git
 
-**Fetch first.** Before editing, before every commit and before every push: `git fetch
-origin`, compare HEAD to `origin/<default>`, reconcile if behind. Several sessions run against
-these repos at once, so origin moves while you work. Compare against the branch you are
-shipping on, not whatever the checkout happens to sit on — another session may already have
-landed the change you are about to redo.
+**Fetch first** and branch from `origin/<default>`; `stale-base-guard` warns at each commit if origin has moved since.
 
 **Never rebase or force-push a feature branch — merge the default branch into it.** Other
 sessions may have the branch checked out, and rewritten history strands their work.

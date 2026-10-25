@@ -43,5 +43,5 @@ fi
 behind="$(git rev-list --count "HEAD..origin/$branch" 2>/dev/null || echo 0)"
 [ "${behind:-0}" -gt 0 ] || exit 0
 
-echo "⚠️  REMINDER: HEAD is $behind commit(s) behind origin/$branch. You are committing onto a stale base — another session has pushed since this work started. Reconcile now (git pull --rebase, or merge) rather than after N commits."
+echo "⚠️  REMINDER: HEAD is $behind commit(s) behind origin/$branch. You are committing onto a stale base — another session has pushed since this work started. Merge it in now (git merge origin/$branch) rather than after N commits — never rebase."
 exit 0
