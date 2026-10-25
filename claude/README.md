@@ -120,8 +120,8 @@ The guards stay generic; a repo declares its own particulars:
 - `.claude/deploy-commands` — extra deploy entrypoints, one extended-regex per
   line. Universal verbs (kubectl, terraform, helm, `gh pr merge`, `deploy.sh`)
   are already covered globally.
-- `.claude/notify` — channel and target id for the optional `/go` notify step.
-  Absent means the chain ends after the PR.
+- `.claude/notify` — channel and target id for the `/go notify` step, which runs
+  only when asked.
 
 ## Requirements
 

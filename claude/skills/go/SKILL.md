@@ -40,7 +40,7 @@ Rationale: tight cycles keep each commit reviewable and give design feedback ear
 ### Gates
 
 - If step 1's test passes immediately → wrong test. Rewrite it; ask the user only if the intended behaviour itself is unclear.
-- If step 2 needs more than ~20 lines or branches into multiple concerns → slice was too big. Revert and slice smaller.
+- If step 2 needs more than ~20 lines or branches into multiple concerns → slice was too big. Slice smaller and roll forward from where you are.
 - If step 3's fix would change a public contract, a schema, or the scope of the task → stop and report; that is a decision for the user.
 
 ### When done with all slices
@@ -94,27 +94,28 @@ When creating a PR: short title (≤70 chars), body with Summary + Test plan. Us
 
 **Never** `gh pr merge`. That's a deploy-shaped action.
 
-### 6. Notify (optional, workspace-specific)
+### 6. Notify (only when asked)
 
-Skip this step unless the current repo declares a notification target — this skill stays
-workspace-neutral so it ports between machines and employers unchanged.
+Skip this step unless the user asked to be notified (`/go notify`, or said so in the conversation).
 
-If `.claude/notify` exists in the repo root, read it and follow it. Shape: blank lines
-and `#` comments are ignored; the first two remaining lines are a channel (e.g. `slack`)
-and a target id. Send a 3–5 line summary:
+The target comes from `.claude/notify` in the repo root, so this skill stays workspace-neutral.
+Shape: blank lines and `#` comments are ignored; the first two remaining lines are a channel
+(e.g. `slack`) and a target id. If the user asked but the file is absent, say so in the report.
+Send a 3–5 line summary:
 - What was changed (one line)
 - Verify / check outcomes
 - Commits made, PR link if created
 - Anything that needs their attention
 
-No preamble. If the file is absent, say nothing and end the chain at step 5.
+No preamble.
 
 ## Arguments
 
 - `/go tdd` — run one inner red→green→refactor→commit cycle.
 - `/go` — full outer chain, stop before PR creation.
 - `/go pr` — full outer chain + create PR.
-- `/go --skip-review` — emergency use only, skip step 3. Ask for user confirmation first.
+- `/go notify` — full outer chain + notify (step 6). Combines with `pr`.
+- `/go --skip-review` — skip step 3. Typing it is the go-ahead; note the skip in the report.
 - `/go --dry-run` — walk through what /go would do without modifying anything.
 
 ## What /go does NOT do
