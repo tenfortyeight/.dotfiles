@@ -123,6 +123,7 @@ prune
 # install brings everything back and installing a tool later needs no re-run.
 tool_link() { # <target> <link>
   local target="$1" dest="$2"
+  [ -e "$target" ] || { warn "missing ${target#"$HOME"/} — skipped"; return 0; }
   mkdir -p "$(dirname "$dest")"
   if [ -e "$dest" ] && [ ! -L "$dest" ]; then
     mv "$dest" "$dest.replaced-$(date +%Y%m%d-%H%M%S)"
