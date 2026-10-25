@@ -107,7 +107,8 @@ for f in sops-guard deploy-ref-guard \
   link "hooks/$f.sh" "hooks/$f.sh"
 done
 
-for s in go scope verify checkpoint; do
+SKILLS=(go scope verify checkpoint review-squad pr-review issue create-issue workflow-trace)
+for s in "${SKILLS[@]}"; do
   link "skills/$s" "skills/$s"
 done
 
@@ -132,7 +133,7 @@ tool_link() { # <target> <link>
   ok "${dest#"$HOME"/}"
 }
 tool_link "$CLAUDE_DIR/agents" "$HOME/.config/opencode/agents"
-for s in go scope verify checkpoint; do
+for s in "${SKILLS[@]}"; do
   tool_link "$CLAUDE_DIR/skills/$s" "$HOME/.codex/skills/$s"
 done
 
