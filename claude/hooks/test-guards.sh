@@ -31,6 +31,8 @@ git init -q --bare "$TMP/origin.git"
 git clone -q "$TMP/origin.git" "$TMP/work" 2>/dev/null
 cd "$TMP/work" || { echo "  FAIL: could not set up throwaway repo"; exit 1; }
 git config user.email t@t; git config user.name t
+# Signing would need the user's SSH key, which a fresh machine has not made yet.
+git config commit.gpgsign false
 echo one > a.txt; git add .; git commit -qm one
 git branch -M main; git push -q origin main
 git remote set-head origin main >/dev/null 2>&1
