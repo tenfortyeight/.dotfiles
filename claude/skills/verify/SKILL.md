@@ -85,7 +85,7 @@ Run the appropriate validator for every file type touched in the current branch.
 
 ## What /verify does NOT do
 
-- Does not run tests unless they're part of the project's default script chain (`npm test`, etc.). For TDD-first bug work, the user writes the failing test manually.
+- Does not run tests unless they're part of the project's default script chain (`npm test`, etc.). For bug work the failing test comes first, from `/go tdd`.
 - Does not commit, push, or deploy.
-- Does not auto-fix (other than `terraform fmt`, which is safe). Report and let the user decide.
+- Does not auto-fix (other than `terraform fmt`, which is safe). Report; fixing is the caller's job (`/go` step 2 fixes and re-runs).
 - Does not pass judgment on architecture or design — that's `/go` step 3.

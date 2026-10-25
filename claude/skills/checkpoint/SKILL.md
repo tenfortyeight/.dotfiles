@@ -98,7 +98,7 @@ When the user starts a new session with "resume from `.claude/checkpoints/<file>
 1. Read the checkpoint file fully.
 2. Read every file path it lists under **In progress** / **Relevant context**.
 3. Verify any state claims (branch is correct, AWS_PROFILE matches, file paths still exist).
-4. Confirm the goal with the user before continuing — point out anything in the checkpoint that looks stale.
+4. Name anything in the checkpoint that looks stale, then carry on — stop only where the user's judgement is needed (CLAUDE.md, Working hands-off).
 5. Then start from the top of **Next steps**.
 
 ## What /checkpoint does NOT do

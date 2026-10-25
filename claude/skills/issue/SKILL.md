@@ -8,8 +8,8 @@ Work on a specific GitHub issue from the current repository.
 ## Features
 - Fetches complete issue details including comments
 - Analyzes issue relevance and current codebase state
-- Provides multiple solution approaches
-- Helps choose the best implementation path
+- Weighs solution approaches and picks the best
+- Asks the user only when the choice needs their judgement
 - Tracks progress with todo list
 
 ## Usage
@@ -22,8 +22,8 @@ Example: `/issue 42`
 2. **Set Assignee** - Set assignee to the user
 3. **Analyze Current State** - Check if issue is still relevant/accurate
 4. **Identify Affected Areas** - Find related code and functions
-5. **Propose Solutions** - Present multiple implementation approaches
-6. **User Decision** - Let user choose approach or provide guidance
-7. **Implementation** - Execute chosen solution with progress tracking
+5. **Choose a Solution** - Weigh the approaches, pick the best and say why in a line
+6. **User Decision, only if needed** - Outline 2–3 approaches and wait only when the choice touches blast radius, changes the scope or needs a business decision (CLAUDE.md, Working hands-off)
+7. **Implementation** - Execute the chosen solution with progress tracking
 
 Arguments: $ARGUMENTS
