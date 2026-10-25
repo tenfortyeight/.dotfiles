@@ -111,7 +111,7 @@ No preamble.
 
 ### 7. Tidy
 
-Once the work has merged, remove its worktree and branch. `~/.claude/hooks/git-tidy.sh` sweeps up any merged, clean worktree and branch left behind; it runs at every session start and can be run by hand.
+Once the work has merged, remove its worktree and branch. `~/.claude/hooks/git-tidy.sh` sweeps up any merged, clean worktree and branch left behind; it runs at the start of each new session and can be run by hand.
 
 ## Arguments
 

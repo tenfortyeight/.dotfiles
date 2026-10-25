@@ -265,7 +265,7 @@ is that check, and says when a change is risky enough for the full review squad.
 unfinished, say plainly what and why — never report something as working when you haven't
 watched it work.
 
-`~/.claude/hooks/git-tidy.sh` removes merged worktrees and branches at every session start; run
+`~/.claude/hooks/git-tidy.sh` removes merged worktrees and branches at the start of each new session; run
 it by hand after a merge rather than leaving them for the next session.
 
 ## This machine
