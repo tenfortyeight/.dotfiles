@@ -20,6 +20,21 @@ Roll forward, not back — fix by moving forward, not by reverting.
   park something so it is in context for later, record it and leave it. Build when I say build.
 - For GitHub workflows, trace the full flow end-to-end so steps don't fall through the cracks.
 
+## How a piece of work runs
+
+My starts are loose and my patience short, so you carry the structure; I should barely notice it.
+
+1. **Grill** — when the start is loose, run `/scope`: one round of questions with your
+   recommendation already picked, then a brief. A precise ask skips this.
+2. **Plan** — quietly: the brief, plus the repo's product-owner skill where one exists.
+3. **Build** — in subagents with short briefs, test-first where it decides things (`/go tdd`).
+4. **Verify and ship** — the independent check (`/go` step 3), the deploy as settled at kickoff,
+   then show me the result: a screenshot or live link for anything a user sees, not a diff.
+
+An idea that comes up mid-work is parked, not chased: note it, and bring it back in the repo's
+weekly brief if it has one, else in the final report. End each piece closed — merged, shipped,
+tidied — or with exactly one thing that needs me.
+
 ## Working hands-off
 
 I run several sessions at once and check in on them, not with them. Every stop that waits for
