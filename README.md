@@ -126,7 +126,7 @@ optional — the shell and git both work with none of them present.
 | `~/.npmrc` | private package scope → registry mappings, and the auth token for them |
 | `~/.claude/settings.local.json` | Claude Code settings for this machine: job-specific permission allow rules, machine-specific hooks, model. `claude/link.sh` merges it into `~/.claude/settings.json`, so re-run that after editing — see [claude/README.md](claude/README.md#settingsjson-is-built-not-linked) |
 | `~/.claude/CLAUDE.local.md` | personal Claude Code instructions — anything about you rather than how you work. The shared `claude/CLAUDE.md` imports it last |
-| `~/.config/opencode/opencode.json` | opencode's `instructions` list, pointing at `~/.claude/CLAUDE.local.md` and `~/.claude/rules/*.md` by absolute path, so opencode gets the same machine-local instructions Claude Code does |
+| `~/.codex/config.toml`, `~/.config/opencode/opencode.json` | Codex and opencode settings for this machine: trusted project paths, providers, MCP servers. Not for instructions — `claude/link.sh` already builds both tools' `AGENTS.md` with `CLAUDE.local.md` and the rules in, so listing them in opencode's `instructions` would load them twice |
 | `~/.claude/rules/*.md` | further global instruction files, read into every session alongside `CLAUDE.md`. Machine-local on purpose: these machines are put to wildly different kinds of work, so the rules worth stating differ per machine — a shared copy would impose one machine's habits on all of them |
 
 **Keep tokens out of files.** Where a tool reads `${VAR}` from the environment
@@ -156,7 +156,7 @@ literally in the file if you need it to work everywhere, and `chmod 600` it.
 | `.terraformrc` | shared provider plugin cache, so workspaces don't each download their own |
 | `.bashrc` / `.bash_profile` | minimal — bash is the fallback shell, not the daily one |
 | `Brewfile` | every package and app, applied by `brew bundle` |
-| `claude/` | the portable half of `~/.claude` — instructions, enforcement hooks, skills, agents. `claude/link.sh` symlinks them in; see [claude/README.md](claude/README.md) |
+| `claude/` | the portable half of `~/.claude` — instructions, enforcement hooks, skills, agents — and the Codex and opencode setup built from it. `claude/link.sh` symlinks them in; see [claude/README.md](claude/README.md) |
 | `vscode/` | VS Code key bindings. Only `keybindings.json` — `settings.json` is left machine-local |
 | `macos/` | macOS system settings applied by script rather than symlink — currently the window tiling shortcuts |
 | `install.sh` | the bootstrap |

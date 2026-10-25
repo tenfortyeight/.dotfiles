@@ -17,15 +17,27 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 
 ## Other agent tools
 
-`~/.claude` is the master for opencode and Codex too. opencode reads
-`~/.claude/CLAUDE.md` and `~/.claude/skills` by itself; `link.sh` links
-`~/.config/opencode/agents` to `~/.claude/agents`, and the four skills into
-`~/.codex/skills`, each only if that tool's config dir exists.
+`~/.claude` is the master for opencode and Codex too. `link.sh` writes their
+files whether or not the tool is installed yet, so a tool installed later finds
+its config already in place:
 
-Codex follows no `@` imports and reads no rules dir, so `link.sh` **builds**
-`~/.codex/AGENTS.md`: `CLAUDE.md`, then `~/.claude/rules/*.md`, then
+| Path | For | What |
+|---|---|---|
+| `~/.codex/AGENTS.md` | Codex | built, see below |
+| `~/.config/opencode/AGENTS.md` | opencode | built, see below |
+| `~/.agents/skills/<name>` | Codex, opencode | each skill in `skills/`, linked. Codex reads user skills only from here |
+| `~/.config/opencode/agents` | opencode | link to `~/.claude/agents` |
+
+Neither tool follows `@` imports or reads a rules dir, so `link.sh` **builds**
+both `AGENTS.md` files: `CLAUDE.md`, then `~/.claude/rules/*.md`, then
 `CLAUDE.local.md`. Like `settings.json`, re-run `link.sh` after editing any of
-them.
+them. Without its own file opencode would fall back to `~/.claude/CLAUDE.md`
+alone and miss the personal and per-machine parts.
+
+opencode also reads `~/.claude/skills`, so it sees each skill twice by the same
+name, both copies the same file. Codex's `config.toml` and `auth.json` and
+opencode's `opencode.json` stay machine-local: the first holds trusted project
+paths, the second a credential.
 
 opencode resolves the agents' `model: sonnet` to nothing and runs them on the
 session model. Hooks, permissions and auto mode stay Claude-only — the deploy,
