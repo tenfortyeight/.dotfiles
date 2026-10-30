@@ -74,6 +74,11 @@ This is the rule for review; CLAUDE.md "Done" points here. Review asks "is this 
 
 - Confirm **every** part of the ask is met, not most of it.
 - Prove it **empirically** — run the tests, the build, the real thing; query the live source for any metric, field, endpoint, model or price — not by reading code.
+- Trace it from the entry point that actually runs — the route, handler, job or page a user or
+  the system hits — to the effect the ask promised. Passing tests on code nothing calls is a FAIL.
+- List anything in the diff the ask didn't include. The lead keeps it only with a reason in the report.
+- Where the repo has a `product-owner` skill and the change is something a user sees, run its
+  acceptance pass too: the real thing, through the user's eyes.
 - Return PASS/FAIL with pasted evidence.
 
 **Only when the change is wide or distributed, or touches auth, payments, data deletion, a migration or a cross-service contract** (or the user asks), go further:
