@@ -65,8 +65,8 @@ guess, say it in a line, and carry on; ask only if the answer is a business deci
 Ask what the user holds in their head when they think about this thing. If the data has a
 shape — things that flow, depend, own, call each other, change over time — draw that shape:
 a canvas of steps and wires, a star with the main thing at the centre, a map where nearness
-means "talks to", a timeline with notches. If it is a list, it is a list; a diagram that
-says nothing the list doesn't gets deleted.
+means "talks to", a timeline with notches. If it is a list, it is a list — skip the rest of
+this step; a diagram that says nothing the list doesn't gets deleted.
 
 Then give each visual channel **one meaning**, and write the key:
 
@@ -123,12 +123,17 @@ Each theme gives:
 - the measured numbers: text-on-background contrast, and whether the colours that must
   stay apart (accent, ok, failure, the category colours) still do under protanopia,
   deuteranopia and tritanopia. Simulate with the Machado (2009) matrices — a few lines of
-  code — and report the ΔE between each pair; below about 10, pair the colour with an icon
-  or label and say so.
+  code — and measure each pair's distance as CIE76 ΔE (plain distance in Lab). Report only
+  the pairs that fall below about 10, and pair those colours with an icon or label.
 
-Build the tokens from the chosen theme. Work in OKLCH: neutrals take the accent's hue at
-very low chroma (a warm or brand-tinted grey, never plain blue-grey); semantic colours
-share one lightness so none shouts; soft tints are the colour at 10–15% alpha.
+With nobody to ask — a subagent, an unattended run — pick the recommended theme, build it,
+and record the choice and the alternatives in the design doc so the user can swap later.
+
+Build the tokens from the chosen theme. Choose in OKLCH, write hex: neutrals take the
+accent's hue at very low chroma (a tinted grey, never plain blue-grey); semantic colours sit
+near one lightness so none shouts; soft tints are the colour at 10–15% alpha. Contrast wins
+over matching lightness — dark and light themes get their own semantic values, each at
+least 4.5:1 for text on its own background.
 
 ## 4. A small closed system
 
@@ -149,9 +154,10 @@ One tokens file is the contract: no literal colours, sizes or durations in a com
 
 **The guide page holds it together.** A route in the app (`/design` or similar) shows every
 piece in every state — empty, loading, failed, busy, disabled — in dark, light and phone
-width. Pages are built only from what it shows. Where the stack allows, a check fails the
-build when a page uses a styled class the guide page doesn't show; that check is what keeps
-the app one app after many sessions.
+width. Pages are built only from what it shows. A check fails when a page uses a styled
+class the guide page doesn't show — in the build or test run where there is one, otherwise a
+small script beside the app that compares the two class lists. That check is what keeps the
+app one app after many sessions.
 
 ## 5. Quiet by default
 
@@ -159,7 +165,9 @@ the app one app after many sessions.
 - **Hierarchy over badges.** A row leads with its name; kind and state are quiet text or one
   tag, not a row of equal coloured pills. Rows read: what it is, state, detail, dates,
   actions.
-- **The expected state says nothing.** "On" needs no badge; "Off" does.
+- **The expected state says nothing.** "On" needs no badge; "Off" does. Where status is
+  its own column, the normal state gets a quiet mark and word ("✓ OK" in muted text) and
+  only the exceptions get colour.
 - **Colour never works alone.** Every coloured mark also has a word, number, icon, shape or
   position. A number nobody has judged gets no colour. Every chart has its table.
 - **Hover changes colour, never position.** A ring or glow; nothing lifts or scales.
@@ -197,7 +205,10 @@ Delight — a joke, a game layer — is welcome, but opt-out and never in the wa
 
 - **Screenshot the real thing at 2×** (headless Chrome with `deviceScaleFactor` 2, or a
   browser tool) and open the images: the whole page, not only what changed, in dark and
-  light and at phone width, beside a sibling page. Does it read as the same app? Is it the
+  light and at phone width, beside a sibling page. Give the app a way to force a theme
+  (`?theme=dark`) so both can be captured. Headless Chrome won't make a window narrower
+  than about 500px, so `--window-size=390,…` quietly shows a wider layout: set the width
+  with CDP `Emulation.setDeviceMetricsOverride`, or frame the page in a 390px iframe. Does it read as the same app? Is it the
   best-looking screen in the app? If not, it is not done.
 - **Run the tells list** below and fix every hit.
 - **Record each decision in the design doc**, dated and with its reason — including why,
