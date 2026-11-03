@@ -26,6 +26,7 @@ and state becomes a mark or motion. You already know the model; pick the drawing
 | The change | Steps |
 |---|---|
 | A tweak inside an existing page | 0, then 7 — and the tells list |
+| A page that feels busy or off | 0, "Busy pages" below, 1, 7 |
 | A new page, view or component | 0, 1, 2, 5, 6, 7 |
 | A new app, or one with no design system | all of it, starting with 3 |
 
@@ -35,6 +36,15 @@ Before touching UI, find the repo's design doc (`docs/design*.md`, `docs/ui.md`,
 section in the README or CLAUDE.md), its tokens file, its shared components and its guide
 page. Build only from those; the repo's own rules beat this skill wherever they differ. A
 piece that is missing is added to the kit and the guide page first, then used.
+
+### Busy pages: take away before adding
+
+When a page "looks off" or "it's hard to know where to go", the fix is nearly always
+removal. Screenshot it and count: frames inside frames (more than two nested bordered
+boxes is one too many), surface shades (adjacent steps too far apart read as heavy), loud
+things competing (solid buttons, badges, coloured pills, icons repeated on every row),
+eyebrow labels over every heading, decoration that carries no data. Remove the extras,
+then check the three questions below still have one clear answer each.
 
 ## 1. Every screen answers three questions
 
@@ -93,9 +103,19 @@ Same data, same backend; the only new work is choosing what each column becomes.
 
 A new app's look is taste, so it is the user's call — but never ask an open question.
 **Propose two or three themes**, recommended first, and show them as one rendered swatch
-page (screenshot it). Each theme gives:
+page (screenshot it).
 
-- a name and its mood in a line ("ink and mint: calm, technical");
+**A theme is a scene, not a mood word.** Name a real place, season or material — "autumn
+leaves", "Provence lavender field", "harbour at dusk", "old library" — and draw the whole
+palette from it: the background from its deepest shade (or palest, for a light theme), the
+neutrals tinted by its light, the accent from its one most vivid thing, the category
+colours from what else is in the picture. A scene keeps the palette coherent, because the
+colours already belong together, and it gives the user something to react to. Pick scenes
+that fit what the app is for. If the user names a scene, build from it.
+
+Each theme gives:
+
+- the scene, and in a line why it fits the app;
 - background, surface steps, text, accent, and the ok / busy / failure colours, as hex;
 - a display face and a body face — a display face with character (Outfit, Bricolage
   Grotesque, Space Grotesk, Fraunces, Instrument Serif), a quiet body face (Manrope,
