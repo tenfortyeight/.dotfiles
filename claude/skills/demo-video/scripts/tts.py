@@ -1,8 +1,10 @@
 """Voice-over: one wav per scene, plus each clip's length.
 
-Inputs:  SCENES_JSON (each scene's "say"; top-level "voice", default bf_emma, and
-         "speed", default 1.0) and MODEL_DIR holding kokoro-v1.0.onnx and voices-v1.0.bin.
+Inputs:  SCENES_JSON (each scene's "say"; top-level "voice", and "speed", default 1.0)
+         and MODEL_DIR holding kokoro-v1.0.onnx and voices-v1.0.bin.
 Outputs: OUT_DIR/00.wav, 01.wav, ... and OUT_DIR/lengths.json ({"00.wav": seconds}).
+         With no "voice", one English voice is picked at random and written back into
+         SCENES_JSON, so a re-run keeps the same voice.
 
 usage: tts.py SCENES_JSON OUT_DIR MODEL_DIR
        tts.py --sample MODEL_DIR OUT_DIR [VOICE ...]   one line per voice, to choose by ear;
@@ -10,14 +12,13 @@ usage: tts.py SCENES_JSON OUT_DIR MODEL_DIR
 Run with a python that has kokoro-onnx and soundfile. On macOS, Homebrew's espeak-ng
 is used if present; set ESPEAK_DATA_PATH to override.
 """
-import json, os, sys
+import json, os, random, sys
 from pathlib import Path
 
 import soundfile as sf
 from kokoro_onnx import Kokoro
 
 MODEL_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/"
-DEFAULT_VOICE = "bf_emma"
 BREW_ESPEAK = "/opt/homebrew/opt/espeak-ng/share/espeak-ng-data"
 SAMPLE_LINE = "Every job, every run, in one place. Here is what failed overnight, and what to do about it."
 
@@ -52,11 +53,19 @@ def say(kokoro, text, voice, speed, path):
     return len(samples) / rate
 
 
+def english_voices(kokoro):
+    return [v for v in kokoro.get_voices() if v[0] in "ab"]
+
+
 def scenes(scenes_file, out_dir, model_dir):
     cfg = json.loads(scenes_file.read_text())
-    voice, speed = cfg.get("voice", DEFAULT_VOICE), cfg.get("speed", 1.0)
-    out_dir.mkdir(parents=True, exist_ok=True)
     kokoro = load(model_dir)
+    if "voice" not in cfg:
+        cfg["voice"] = random.choice(english_voices(kokoro))
+        scenes_file.write_text(json.dumps(cfg, indent=1, ensure_ascii=False) + "\n")
+        print("voice:", cfg["voice"], "(picked at random, saved to", scenes_file, ")")
+    voice, speed = cfg["voice"], cfg.get("speed", 1.0)
+    out_dir.mkdir(parents=True, exist_ok=True)
     lengths = {}
     for i, scene in enumerate(cfg["scenes"]):
         path = out_dir / f"{i:02d}.wav"
@@ -68,7 +77,7 @@ def scenes(scenes_file, out_dir, model_dir):
 def sample(model_dir, out_dir, voices):
     out_dir.mkdir(parents=True, exist_ok=True)
     kokoro = load(model_dir)
-    for voice in voices or [v for v in kokoro.get_voices() if v[0] in "ab"]:
+    for voice in voices or english_voices(kokoro):
         say(kokoro, SAMPLE_LINE, voice, 1.0, out_dir / f"{voice}.wav")
         print(out_dir / f"{voice}.wav")
 

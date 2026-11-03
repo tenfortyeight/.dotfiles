@@ -22,9 +22,9 @@ outro that leaves one line behind. Everything else serves those.
 
 You need the **feature or flow**, the **app**, the **environment** and its **URL**. Ask
 for whatever is missing in one question, then carry on. Defaults unless the user says
-otherwise: British female voice (`bf_emma`), 1.5–3 minutes, and a non-production
-environment when the user leaves the choice open. If the user wants to pick the voice, give
-them samples to listen to (see Voice) rather than a list of names.
+otherwise: a random English voice, 1.5–3 minutes, and a non-production environment when
+the user leaves the choice open. If the user wants to pick the voice, give them samples to
+listen to (see Voice) rather than a list of names.
 
 Work in the session's scratch folder; everything — frames, clips, the venv — goes there.
 
@@ -114,9 +114,13 @@ way back.) Wait for the card's font to load before showing it.
   and `voices-v1.0.bin`, ~350 MB together) come from the kokoro-onnx GitHub release
   `model-files-v1.0`.
 - **The voice** is `"voice"` in the scenes file, and `"speed"` (default 1.0) sets its
-  pace. A voice name's first letter is its accent or language and the second its gender:
-  `bf_emma` is British female, `am_adam` American male. The English ones:
-  - British female: `bf_emma` (default), `bf_alice`, `bf_isabella`, `bf_lily`
+  pace. Unless the user named one, pick an English voice at random when writing the
+  script, put it in the scenes file and name it above the script table, so the user can
+  swap it and the spelling matches its accent. (With no `"voice"`, `tts.py` picks one at
+  random itself and writes it back into the file.) A voice name's first letter is its
+  accent or language and the second its gender: `bf_emma` is British female, `am_adam`
+  American male. The English ones:
+  - British female: `bf_emma`, `bf_alice`, `bf_isabella`, `bf_lily`
   - British male: `bm_george`, `bm_daniel`, `bm_fable`, `bm_lewis`
   - American female: `af_heart`, `af_bella`, `af_nicole`, `af_sarah`, `af_sky`, `af_nova`,
     `af_river`, `af_jessica`, `af_kore`, `af_aoede`, `af_alloy`
