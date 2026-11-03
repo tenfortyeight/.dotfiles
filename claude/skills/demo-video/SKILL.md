@@ -30,10 +30,12 @@ Work in the session's scratch folder; everything — frames, clips, the venv —
 **Subtitles** are optional, off unless asked. With them on, write an `.srt` from the
 script and the clip timings, and give it alongside the mp4.
 
-**Reuse what is here.** If `scripts/` next to this file holds a recorder, card template
-or assembly script from an earlier run, use and improve it rather than writing a new one.
-After a run, put back any script that worked better than what was there, so the next video
-starts further along.
+**Start from `scripts/` next to this file** — a tested pipeline from an earlier run:
+`tts.py` (scenes → one voice clip per scene), `recorder.py` (headless Chrome over CDP,
+with pointer, zoom camera, cards and a timeout) and `assemble.py` (frames and clips → the
+mp4, optional subtitles); `scenes.example.json` shows the scene format they share. Use
+and improve them rather than writing new ones, and put back whatever worked better, so
+the next video starts further along.
 
 ## Before the script: can we get in?
 
@@ -58,6 +60,8 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
 - **Scenes:** intro card · the whole thing · each part up close · how it is set up ·
   a real run played back · close · outro card.
 - **Words:** about 150 a minute of voice-over, so 225–450 in total. One idea per scene.
+  The voice tends to read faster than that, so time the clips before trusting the length;
+  if it comes out short, add a scene rather than padding with pauses.
 - **Voice:** say what the viewer is looking at and why it matters to them, in plain
   words. Not the UI's labels read aloud, not "Here we can see". British spelling for a
   British voice.
@@ -67,7 +71,14 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
 ## 2. Picture
 
 - **Record the live app** in headless Chrome driven over CDP (`Page.startScreencast`),
-  viewport 1600×900 at `deviceScaleFactor` 2, scaled to 1080p.
+  viewport 1600×900 at `deviceScaleFactor` 2, scaled to 1080p. Record the whole video
+  as one continuous take and note each scene's start on the video clock; a scene runs
+  for its voice clip plus a breath, or longer if its steps need it.
+- **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the
+  recording. Serve local files over http.
+- **Zoom** with a CSS transform on `<body>` and `overflow: hidden` on `<html>`, so the
+  pointer and cards (on `<html>`) stay sharp and the page doesn't scroll sideways. After a
+  route change, wait briefly before reading positions: the new view may not exist yet.
 - **Sign in without a browser login.** Get a short-lived token from the app's own CLI
   or token endpoint and add it to requests per host with Fetch interception. Never
   print it, and revoke or delete it afterwards — also when the run fails. If there is
@@ -83,12 +94,15 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
 
 ### Intro and outro cards
 
-Load the app's page first, then draw the card **inside it with `document.write`** —
-navigating to a `file://` page breaks CDP mouse input for the rest of the recording.
+Draw the card as a **fixed overlay on top of the loaded app page** and remove it when
+done — no navigation, so input keeps working and the app keeps its state. (Replacing the
+page with `document.write` also works, but loses the app's state and flashes white on the
+way back.) Wait for the card's font to load before showing it.
 
 - Take the look from the app: its darkest surface as the background, its accent for
-  the wordmark, its display font. With no theme to take from, use a near-black
-  background, one bright accent and Outfit from Google Fonts.
+  the wordmark, its display font. If the app opens in its light theme, pass the dark
+  values in explicitly. With no theme to take from, use a near-black background, one
+  bright accent and Outfit from Google Fonts.
 - A large headline with a sheen sweeping across it, a glowing line that draws across
   with dots popping in along it, and three tag pills naming what the feature does.
 - The outro reuses the card with the closing line and subline.
@@ -96,17 +110,24 @@ navigating to a `file://` page breaks CDP mouse input for the rest of the record
 ## 3. Voice
 
 - **Kokoro TTS** via `kokoro-onnx` in a Python 3.12 venv; voice `bf_emma` for British
-  female. Model files come from the kokoro-onnx GitHub release.
+  female. Model files (`kokoro-v1.0.onnx` and `voices-v1.0.bin`, ~350 MB together) come
+  from the kokoro-onnx GitHub release `model-files-v1.0`.
 - On macOS use Homebrew's `espeak-ng` (`brew install espeak-ng`); the data path in the
   bundled espeakng-loader is broken there.
-- **One clip per scene, and time each scene to its clip.** Generate the voice before
-  recording, measure each clip's length, and hold each scene that long plus a short
-  breath — the picture waits for the voice, never the other way round.
+- **One clip per scene, generated before recording.** Measure each clip's length and
+  hold its scene at least that long — the picture waits for the voice, never the other
+  way round. Place each clip at its scene's start on the video clock.
 
 ## 4. Sound and assembly (ffmpeg)
 
+- **Frames to video:** the screencast sends a frame only when something changes, so
+  build an ffmpeg concat list with each frame's duration and read it with
+  `-fps_mode vfr`. Without that, ffmpeg assumes 25 fps and the video quietly comes out
+  seconds short.
 - Normalise the voice to **-16 LUFS** (`loudnorm`). Put a quiet generated pad about
-  25 dB under it (volume ~0.12).
+  25 dB under it — measure both, since the right volume factor depends on the pad's
+  source level.
+- **Pad the audio to the video's length** (`apad`), or the end of the outro is cut.
 - Output **H.264 + AAC, 48 kHz stereo**. A 24 kHz mono track once played silent in
   QuickTime.
 

@@ -1,0 +1,39 @@
+{
+ "title": "Example app",
+ "voice": "bf_emma",
+ "breath": 1.0,
+ "style": {"accent": "#e8a94a", "bg": "#101418", "font": "Outfit"},
+ "scenes": [
+  {
+   "name": "intro",
+   "card": {"headline": "Example", "pills": ["Fast", "Simple", "Shared"]},
+   "say": "One sentence that says what the app is for."
+  },
+  {
+   "name": "search",
+   "say": "Type part of a name and the list narrows straight away.",
+   "steps": [
+    {"zoom": null},
+    {"click": "#search"},
+    {"type": {"text": "invoice"}},
+    {"wait": 1.2},
+    {"zoom": ".results", "pad": 40},
+    {"eval": "location.hash = '#settings'"},
+    {"move": ".save"}
+   ]
+  },
+  {
+   "name": "outro",
+   "card": {"headline": "Every job. Every run.", "pills": ["Fast", "Simple", "Shared"], "subline": "Example, the job scheduler"},
+   "say": "Every job. Every run. In one place."
+  }
+ ],
+ "_notes": [
+  "voice: a Kokoro voice name. breath: seconds of silence after each clip.",
+  "style (optional): accent = wordmark and tag colour, bg = card background (default: the page's own), font = a Google Fonts family. --accent/--bg/--font on recorder.py override it.",
+  "say: the voice-over for the scene; the scene holds for it. Cards stay at least 5 seconds.",
+  "card: headline, pills (up to three tags), subline (outro only, optional).",
+  "steps run in order at scene start: zoom {selector|null, pad px}, move/click selector, type {text}, eval js, wait seconds.",
+  "A hash change in an eval step is followed by a short automatic wait."
+ ]
+}
