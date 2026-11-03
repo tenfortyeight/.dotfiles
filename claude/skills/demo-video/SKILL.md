@@ -22,8 +22,9 @@ outro that leaves one line behind. Everything else serves those.
 
 You need the **feature or flow**, the **app**, the **environment** and its **URL**. Ask
 for whatever is missing in one question, then carry on. Defaults unless the user says
-otherwise: British female voice, 1.5–3 minutes, and a non-production environment when the
-user leaves the choice open.
+otherwise: British female voice (`bf_emma`), 1.5–3 minutes, and a non-production
+environment when the user leaves the choice open. If the user wants to pick the voice, give
+them samples to listen to (see Voice) rather than a list of names.
 
 Work in the session's scratch folder; everything — frames, clips, the venv — goes there.
 
@@ -109,9 +110,23 @@ way back.) Wait for the card's font to load before showing it.
 
 ## 3. Voice
 
-- **Kokoro TTS** via `kokoro-onnx` in a Python 3.12 venv; voice `bf_emma` for British
-  female. Model files (`kokoro-v1.0.onnx` and `voices-v1.0.bin`, ~350 MB together) come
-  from the kokoro-onnx GitHub release `model-files-v1.0`.
+- **Kokoro TTS** via `kokoro-onnx` in a Python 3.12 venv. Model files (`kokoro-v1.0.onnx`
+  and `voices-v1.0.bin`, ~350 MB together) come from the kokoro-onnx GitHub release
+  `model-files-v1.0`.
+- **The voice** is `"voice"` in the scenes file, and `"speed"` (default 1.0) sets its
+  pace. A voice name's first letter is its accent or language and the second its gender:
+  `bf_emma` is British female, `am_adam` American male. The English ones:
+  - British female: `bf_emma` (default), `bf_alice`, `bf_isabella`, `bf_lily`
+  - British male: `bm_george`, `bm_daniel`, `bm_fable`, `bm_lewis`
+  - American female: `af_heart`, `af_bella`, `af_nicole`, `af_sarah`, `af_sky`, `af_nova`,
+    `af_river`, `af_jessica`, `af_kore`, `af_aoede`, `af_alloy`
+  - American male: `am_adam`, `am_michael`, `am_eric`, `am_liam`, `am_onyx`, `am_echo`,
+    `am_fenrir`, `am_puck`, `am_santa`
+
+  Spanish, French, Hindi, Italian, Japanese, Portuguese and Mandarin voices are in the
+  file too; the script picks the language from the first letter. To choose by ear,
+  `tts.py --sample MODEL_DIR OUT_DIR [voices…]` reads one line in each voice (every
+  English one if none are named). Use American spelling for an American voice.
 - On macOS use Homebrew's `espeak-ng` (`brew install espeak-ng`); the data path in the
   bundled espeakng-loader is broken there.
 - **One clip per scene, generated before recording.** Measure each clip's length and

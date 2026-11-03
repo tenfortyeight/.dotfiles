@@ -29,7 +29,7 @@
   }
  ],
  "_notes": [
-  "voice: a Kokoro voice name. breath: seconds of silence after each clip.",
+  "voice: a Kokoro voice name (default bf_emma; tts.py --sample to hear them). speed: voice pace, default 1.0. breath: seconds of silence after each clip.",
   "style (optional): accent = wordmark and tag colour, bg = card background (default: the page's own), font = a Google Fonts family. --accent/--bg/--font on recorder.py override it.",
   "say: the voice-over for the scene; the scene holds for it. Cards stay at least 5 seconds.",
   "card: headline, pills (up to three tags), subline (outro only, optional).",
