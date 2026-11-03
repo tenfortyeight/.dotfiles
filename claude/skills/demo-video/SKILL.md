@@ -27,6 +27,26 @@ user leaves the choice open.
 
 Work in the session's scratch folder; everything — frames, clips, the venv — goes there.
 
+**Subtitles** are optional, off unless asked. With them on, write an `.srt` from the
+script and the clip timings, and give it alongside the mp4.
+
+**Reuse what is here.** If `scripts/` next to this file holds a recorder, card template
+or assembly script from an earlier run, use and improve it rather than writing a new one.
+After a run, put back any script that worked better than what was there, so the next video
+starts further along.
+
+## Before the script: can we get in?
+
+Check these first, so a dead end shows up before anyone has approved a script:
+
+- **Tools**: `ffmpeg`, `ffprobe`, `espeak-ng`, Python 3.12 and Chrome. Install what is
+  missing (`brew install ffmpeg espeak-ng python@3.12`).
+- **Sign-in**: get a token (see Picture), open the target URL in headless Chrome with it,
+  and confirm a signed-in page loads — not a login form or a redirect to one. If the app
+  signs in with a cookie or a browser login instead, say so in a line and find the route
+  that works (a session cookie set with `Network.setCookie`, or a test account) before
+  writing the script. Ask only if none does.
+
 ## 1. Script first, and wait
 
 Write the script scene by scene and **show it to the user before recording anything.**
@@ -55,6 +75,9 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
 - **Frame the camera on where things actually are.** Read element positions from the
   page (`getBoundingClientRect`) and zoom to each part; on a canvas, pan by dragging
   with CDP mouse events. Wait for animations to settle before reading positions.
+- **Show the pointer.** Headless Chrome draws no cursor, so clicks would happen
+  invisibly. Inject a drawn pointer that follows the CDP mouse moves, glides between
+  targets, and shows a small ripple on each click.
 - **No personal data on screen.** Use demo data, and hide panels that show names,
   emails or free text from real people.
 
