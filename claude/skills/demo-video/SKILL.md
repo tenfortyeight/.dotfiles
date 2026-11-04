@@ -34,7 +34,9 @@ script and the clip timings, and give it alongside the mp4.
 **Start from `scripts/` next to this file** — a tested pipeline from an earlier run:
 `tts.py` (scenes → one voice clip per scene), `recorder.py` (headless Chrome over CDP,
 with pointer, zoom camera, cards and a timeout) and `assemble.py` (frames and clips → the
-mp4, optional subtitles); `scenes.example.json` shows the scene format they share. Use
+mp4, optional subtitles); `scenes.example.json` shows the scene format they share.
+`contact.py` tiles one frame per scene of a recording and `check_frames.py` does the same
+for the finished mp4. Use
 and improve them rather than writing new ones, and put back whatever worked better, so
 the next video starts further along.
 
@@ -47,8 +49,19 @@ Check these first, so a dead end shows up before anyone has approved a script:
 - **Sign-in**: get a token (see Picture), open the target URL in headless Chrome with it,
   and confirm a signed-in page loads — not a login form or a redirect to one. If the app
   signs in with a cookie or a browser login instead, say so in a line and find the route
-  that works (a session cookie set with `Network.setCookie`, or a test account) before
-  writing the script. Ask only if none does.
+  that works before writing the script. Ask only if none does. The route that worked
+  for an Okta-only app: open a visible Chrome with its own scratch `--user-data-dir` and
+  `--remote-debugging-port`, have the user sign in there once, and record headless with
+  `recorder.py --cookies-from PORT --cookie-domain …`. Never record in that window: a
+  window Chrome thinks is hidden runs no animation frames, and maps and graphs never lay
+  themselves out. An embedded app with its own sign-in (an iframe) needs its round trip
+  done in that window too, brought to the front (`Page.bringToFront`). Close it and delete
+  its profile afterwards.
+- **A trial run before the real take**: every clip length set to 1, `--probe` so each
+  missed selector is listed in one pass, then `contact.py` to look at every scene. Aim at
+  things by their text with a helper in the scenes file's `inject` script (CSS uppercase
+  changes `innerText`, so compare without case). The same `inject` hides the signed-in
+  person's name.
 
 ## 1. Script first, and wait
 
@@ -155,8 +168,9 @@ way back.) Wait for the card's font to load before showing it.
 - `ffprobe` the file: an audio stream is there, AAC, 48 kHz, 2 channels.
 - It is audible: measure the mean volume (`volumedetect`). Around -91 dB is silence;
   a normalised voice track should be far above that.
-- Pull a frame from the middle of every scene and look at it: framed on the right
-  thing, no personal data, no stray dialogs or cursors.
+- Pull a frame from the middle of every scene and look at it (`check_frames.py`): framed
+  on the right thing, no personal data, no stray dialogs or cursors. Also look at the last
+  frame before each card: a payoff that lands in the last seconds of a scene needs holding.
 
 Then give the user the path to the final mp4, its length, and one line on anything
 that came out differently from the script.

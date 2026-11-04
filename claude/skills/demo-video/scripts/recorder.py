@@ -7,16 +7,25 @@ Outputs: OUT_DIR/frames/*.jpg, OUT_DIR/frames.txt (ffmpeg concat list) and
 usage: recorder.py SCENES_JSON LENGTHS_JSON OUT_DIR URL [--chrome PATH] [--port N]
                    [--width 1600 --height 900] [--accent #hex --bg #hex --font "Name"]
                    [--timeout 600] [--step-timeout 30] [--auth-host HOST ...]
+                   [--cookies-from PORT --cookie-domain SUBSTR ...] [--probe]
 Run with a python that has `websockets`.
 
+The scenes file may set "inject" (a JS file, beside it, run on every page load: hiding the person's
+name, helpers for steps) and "first_load" (seconds to wait after the first navigation, default 2.5).
+
 A scene is {"name", "say", "card"?, "steps"?}.
-  - "card": {"headline", "pills"?, "subline"?} draws a card over the page (no navigation).
+  - "card": {"headline", "pills"?, "subline"?, "code"?} draws a card over the page (no navigation).
+    "code": true sets the subline in monospace, so a command's "--" is not drawn as a dash.
     Colours and font come from the scenes file's "style" {accent, bg, font}; the flags override it.
   - "steps" run at scene start, one after another. Each is one of:
       {"zoom": selector|null, "pad": px}   camera onto an element (null = whole page)
       {"move": selector}                   glide the pointer there
       {"click": selector}                  glide, then click with a ripple
-      {"type": {"text": "..."}}            type into the focused field
+      {"type": {"text": "..."}}            type into the focused field (insertText: React sees it, å ä ö work)
+      {"key": "Escape", "vk": 27}          press a key; "modifiers" 1 Alt 2 Ctrl 4 Meta 8 Shift
+      {"go": "/path?q=1", "settle": 1.5}   in-app navigation for a single-page app (pushState + popstate)
+      {"until": "js", "settle": s}         hold until a JS condition is true; "timeout" per step
+      {"ff": seconds, "factor": 6}         wait, played back faster (an answer being written); keep clear of voice
       {"eval": "js"}                       run JS in the page (a hash change is followed by a short wait)
       {"wait": seconds}
 A scene holds for its voice clip + "breath" (cards at least CARD_MIN seconds),
@@ -29,6 +38,15 @@ Auth: an app behind a login can be recorded with a bearer token. Put the token i
 DEMO_AUTH_TOKEN environment variable and name the hosts it may be sent to with --auth-host
 (repeatable). It is added as "Authorization: Bearer ..." to requests to those hosts only,
 via CDP Fetch interception. It is never printed or written to disk.
+
+Or, for an app with only a browser login: start a visible Chrome with its own --user-data-dir and
+--remote-debugging-port, let the person sign in there, and pass --cookies-from PORT: its cookies for
+the --cookie-domain substrings are copied into the headless one. Record headless, never in that
+window: Chrome pauses animation frames in a window it thinks is hidden, and layouts that wait on
+them (React Flow and the like) never settle.
+
+--probe is a trial run: a failed step is reported and the run goes on, so one pass lists every miss.
+Run it with every clip length set to 1 and look at contact.py's sheet before the real take.
 """
 import argparse, asyncio, base64, json, os, subprocess, sys, tempfile, time, urllib.request
 from urllib.parse import urlparse
@@ -95,6 +113,7 @@ CARD_CSS = """
   color:%(accent)s;animation:__up .6s ease-out both}
 @keyframes __up{from{opacity:0;transform:translateY(14px)}}
 .__card .sub{font-size:30px;opacity:.75;animation:__up .6s ease-out 1.3s both}
+.__card .sub.code{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:26px}
 """
 
 
@@ -102,7 +121,8 @@ def card_js(card, style, hold):
     """JS that draws the card as an overlay on the loaded app page."""
     dots = "".join(f'<i style="left:{p}%;animation-delay:{0.5 + p / 100 * 1.1:.2f}s"></i>' for p in (0, 33, 66, 100))
     pills = "".join(f'<span style="animation-delay:{0.9 + n * 0.15:.2f}s">{t}</span>' for n, t in enumerate(card.get("pills", [])))
-    sub = f'<div class="sub">{card["subline"]}</div>' if card.get("subline") else ""
+    sub = (f'<div class="sub{" code" if card.get("code") else ""}">{card["subline"]}</div>'
+           if card.get("subline") else "")  # "code": true sets the subline in monospace, e.g. a command
     css = CARD_CSS % {**style, "out_at": max(hold - 0.5, 1)}
     html = f'<h1>{card["headline"]}</h1><div class="line">{dots}</div><div class="pills">{pills}</div>{sub}'
     return f"""(async () => {{
@@ -150,6 +170,7 @@ class Recorder:
     def __init__(self, cdp, out, width, height):
         self.cdp, self.out, self.w, self.h = cdp, out, width, height
         self.frames, self.t0 = [], None
+        self.ff = []  # (start, end, factor) on the video clock: spans played back faster
         self.pos = (width / 2, height / 2)
         self.cam = (1.0, 0.0, 0.0)  # scale, tx, ty of the body transform
         (out / "frames").mkdir(parents=True, exist_ok=True)
@@ -215,16 +236,19 @@ class Recorder:
         await asyncio.sleep(0.4)
 
     async def type_text(self, text):
+        # insertText, not key events: React-controlled inputs miss synthetic key text, and it takes å, ä, ö.
         for ch in text:
-            await self.cdp.send("Input.dispatchKeyEvent", type="keyDown", text=ch, key=ch)
-            await self.cdp.send("Input.dispatchKeyEvent", type="keyUp", key=ch)
-            await asyncio.sleep(0.12)
+            await self.cdp.send("Input.insertText", text=ch)
+            await asyncio.sleep(0.07)
 
-    async def run_step(self, step, timeout):
+    async def run_step(self, step, timeout, keep_going=False):
         try:
-            await asyncio.wait_for(self.do_step(step), timeout + step.get("wait", 0))
-        except asyncio.TimeoutError:
-            sys.exit(f"step timed out after {timeout}s: {json.dumps(step)}")
+            await asyncio.wait_for(self.do_step(step), step.get("timeout", timeout) + step.get("wait", 0) + step.get("ff", 0))
+        except (asyncio.TimeoutError, RuntimeError) as e:
+            what = f"step failed ({type(e).__name__}: {str(e)[:160]}): {json.dumps(step, ensure_ascii=False)[:160]}"
+            if not keep_going:
+                sys.exit(what)
+            print("  " + what)  # a trial run (--probe) lists every miss in one pass
 
     async def do_step(self, step):
         if "zoom" in step:
@@ -239,10 +263,53 @@ class Recorder:
             await self.cdp.js(step["eval"])
             if "location.hash" in step["eval"]:
                 await asyncio.sleep(SHORT_WAIT)
+        elif "go" in step:
+            # In-app navigation for a single-page app: a new history entry and a popstate, no reload.
+            await self.cdp.js(f"history.pushState(null, '', {json.dumps(step['go'])});"
+                              "dispatchEvent(new PopStateEvent('popstate'))")
+            await asyncio.sleep(step.get("settle", 1.5))
+        elif "key" in step:
+            key = step["key"]
+            mods = step.get("modifiers", 0)  # 1 Alt, 2 Ctrl, 4 Meta, 8 Shift
+            for kind in ("keyDown", "keyUp"):
+                await self.cdp.send("Input.dispatchKeyEvent", type=kind, key=key, code=step.get("code", key),
+                                    windowsVirtualKeyCode=step.get("vk", 0), modifiers=mods)
+            await asyncio.sleep(0.3)
+        elif "until" in step:
+            # Hold until a JS condition is true (an answer has arrived), polling; the step timeout caps it.
+            while not await self.cdp.js(f"!!({step['until']})"):
+                await asyncio.sleep(0.5)
+            await asyncio.sleep(step.get("settle", 0))
+        elif "ff" in step:
+            # Fast-forward a wait the viewer needn't sit through (an answer being written): recorded in
+            # real time, played back `factor` times faster. Keep it clear of a voice clip, which isn't sped up.
+            start = self.now()
+            await asyncio.sleep(step["ff"])
+            self.ff.append((start, self.now(), step.get("factor", 6)))
         elif "wait" in step:
             await asyncio.sleep(step["wait"])
         else:
             raise ValueError(f"unknown step {step}")
+
+
+async def borrow_cookies(cdp, port, domains):
+    """Copy the cookies for `domains` from a Chrome someone signed in to by hand (on `port`) into this one.
+
+    For apps that sign in with a browser login and a session cookie, where no token can be minted:
+    the person signs in once in a visible Chrome, and the headless one records with its cookies.
+    Values are never printed or written to disk."""
+    version = json.load(urllib.request.urlopen(f"http://127.0.0.1:{port}/json/version"))
+    async with websockets.connect(version["webSocketDebuggerUrl"], max_size=None) as ws:
+        await ws.send(json.dumps({"id": 1, "method": "Storage.getCookies"}))
+        while (msg := json.loads(await ws.recv())).get("id") != 1:
+            pass
+    keep = [c for c in msg["result"]["cookies"] if any(d in c["domain"] for d in domains)]
+    allowed = {"name", "value", "domain", "path", "secure", "httpOnly", "sameSite", "expires", "priority",
+               "sameParty", "sourceScheme", "partitionKey"}
+    cookies = [{k: v for k, v in c.items() if k in allowed and not (k == "expires" and c.get("session"))} for c in keep]
+    await cdp.send("Network.enable")
+    await cdp.send("Network.setCookies", cookies=cookies)
+    print(f"borrowed {len(cookies)} cookies for {', '.join(domains)}")
 
 
 def auth_handler(cdp, token, hosts):
@@ -297,8 +364,14 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
     if args.auth_host:
         await cdp.send("Fetch.enable", patterns=[{"urlPattern": "*"}])
     await cdp.send("Page.addScriptToEvaluateOnNewDocument", source=POINTER_JS)
+    # "inject": a JS file (relative to the scenes file) run on every page load, e.g. hiding the person's name.
+    if cfg.get("inject"):
+        inject = (Path(args.scenes).parent / cfg["inject"]).read_text()
+        await cdp.send("Page.addScriptToEvaluateOnNewDocument", source=inject)
+    if args.cookies_from:
+        await borrow_cookies(cdp, args.cookies_from, args.cookie_domain or [urlparse(args.url).hostname])
     await cdp.send("Page.navigate", url=args.url)
-    await asyncio.sleep(2.5)
+    await asyncio.sleep(cfg.get("first_load", 2.5))
     # The "can we get in" check: print what loaded, so a login form is obvious.
     print("loaded:", await cdp.js("document.title"), "|", (await cdp.js("document.body.innerText"))[:80].replace("\n", " / "))
     await cdp.js(POINTER_JS)
@@ -320,7 +393,7 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
         start = rec.now()
         print(f"scene {i} {scene['name']} @ {start:.1f}s hold {hold:.1f}s")
         for step in scene.get("steps", []):
-            await rec.run_step(step, args.step_timeout)
+            await rec.run_step(step, args.step_timeout, args.probe)
         await asyncio.sleep(max(0, start + hold - rec.now()))
         timeline.append({"name": scene["name"], "start": start, "end": rec.now()})
 
@@ -330,14 +403,21 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
     write_outputs(rec, timeline, end)
 
 
+def squeezer(ff):
+    """Maps a time on the recording clock to the played-back clock, with fast-forwarded spans shortened."""
+    return lambda t: t - sum(max(0.0, min(t, e) - s) * (1 - 1 / f) for s, e, f in ff)
+
+
 def write_outputs(rec, timeline, end):
+    at = squeezer(rec.ff)
     lines = []
     for (ts, name), nxt in zip(rec.frames, rec.frames[1:] + [(rec.t0 + end, None)]):
-        lines.append(f"file '{name}'\nduration {max(nxt[0] - ts, 0.001):.4f}")
+        lines.append(f"file '{name}'\nduration {max(at(nxt[0] - rec.t0) - at(ts - rec.t0), 0.001):.4f}")
     lines.append(f"file '{rec.frames[-1][1]}'")  # concat demuxer ignores the last duration
     (rec.out / "frames.txt").write_text("\n".join(lines) + "\n")
-    (rec.out / "timeline.json").write_text(json.dumps({"total": end, "scenes": timeline}, indent=1))
-    print(f"{len(rec.frames)} frames, {end:.1f}s")
+    scenes = [{**s, "start": at(s["start"]), "end": at(s["end"])} for s in timeline]
+    (rec.out / "timeline.json").write_text(json.dumps({"total": at(end), "scenes": scenes}, indent=1))
+    print(f"{len(rec.frames)} frames, {at(end):.1f}s played back ({end:.1f}s recorded)")
 
 
 if __name__ == "__main__":
@@ -350,6 +430,9 @@ if __name__ == "__main__":
     ap.add_argument("--timeout", type=float, default=600, help="seconds for the whole recording")
     ap.add_argument("--step-timeout", type=float, default=30, help="seconds for one step")
     ap.add_argument("--auth-host", action="append", help="send $DEMO_AUTH_TOKEN as a bearer token to this host")
+    ap.add_argument("--probe", action="store_true", help="trial run: report a failed step and carry on")
+    ap.add_argument("--cookies-from", type=int, help="debug port of a Chrome signed in by hand; copy its cookies")
+    ap.add_argument("--cookie-domain", action="append", help="with --cookies-from: domains to copy (default: the URL's host)")
     args = ap.parse_args()
     if args.auth_host and not os.environ.get("DEMO_AUTH_TOKEN"):
         sys.exit("--auth-host needs the token in the DEMO_AUTH_TOKEN environment variable")

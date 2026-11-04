@@ -1,29 +1,65 @@
 {
  "title": "Example app",
  "breath": 1.0,
- "style": {"accent": "#e8a94a", "bg": "#101418", "font": "Outfit"},
+ "style": {
+  "accent": "#e8a94a",
+  "bg": "#101418",
+  "font": "Outfit"
+ },
  "scenes": [
   {
    "name": "intro",
-   "card": {"headline": "Example", "pills": ["Fast", "Simple", "Shared"]},
+   "card": {
+    "headline": "Example",
+    "pills": [
+     "Fast",
+     "Simple",
+     "Shared"
+    ]
+   },
    "say": "One sentence that says what the app is for."
   },
   {
    "name": "search",
    "say": "Type part of a name and the list narrows straight away.",
    "steps": [
-    {"zoom": null},
-    {"click": "#search"},
-    {"type": {"text": "invoice"}},
-    {"wait": 1.2},
-    {"zoom": ".results", "pad": 40},
-    {"eval": "location.hash = '#settings'"},
-    {"move": ".save"}
+    {
+     "zoom": null
+    },
+    {
+     "click": "#search"
+    },
+    {
+     "type": {
+      "text": "invoice"
+     }
+    },
+    {
+     "wait": 1.2
+    },
+    {
+     "zoom": ".results",
+     "pad": 40
+    },
+    {
+     "eval": "location.hash = '#settings'"
+    },
+    {
+     "move": ".save"
+    }
    ]
   },
   {
    "name": "outro",
-   "card": {"headline": "Every job. Every run.", "pills": ["Fast", "Simple", "Shared"], "subline": "Example, the job scheduler"},
+   "card": {
+    "headline": "Every job. Every run.",
+    "pills": [
+     "Fast",
+     "Simple",
+     "Shared"
+    ],
+    "subline": "Example, the job scheduler"
+   },
    "say": "Every job. Every run. In one place."
   }
  ],
@@ -32,7 +68,9 @@
   "style (optional): accent = wordmark and tag colour, bg = card background (default: the page's own), font = a Google Fonts family. --accent/--bg/--font on recorder.py override it.",
   "say: the voice-over for the scene; the scene holds for it. Cards stay at least 5 seconds.",
   "card: headline, pills (up to three tags), subline (outro only, optional).",
-  "steps run in order at scene start: zoom {selector|null, pad px}, move/click selector, type {text}, eval js, wait seconds.",
-  "A hash change in an eval step is followed by a short automatic wait."
+  "A hash change in an eval step is followed by a short automatic wait.",
+  "steps run in order at scene start: zoom {selector|null, pad px}, move/click selector, type {text}, key {key, vk, modifiers}, go path (SPA navigation), until js (hold till true), ff seconds + factor (fast-forward a wait), eval js, wait seconds. Any step may set its own timeout.",
+  "inject (optional): a JS file beside the scenes file, run on every page load: hide the person's name, define helpers such as a find-by-text tagger.",
+  "card.code: true sets the subline in monospace, for a command."
  ]
 }
