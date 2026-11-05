@@ -370,6 +370,9 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
     await cdp.send("Emulation.setDeviceMetricsOverride", width=args.width, height=args.height, deviceScaleFactor=2, mobile=False)
     if args.auth_host:
         await cdp.send("Fetch.enable", patterns=[{"urlPattern": "*"}])
+    # The app's Content-Security-Policy would block the cards' web fonts (and any card asset); a recording
+    # isn't the app's real traffic, so bypass it. Without this a card silently falls back to a system font.
+    await cdp.send("Page.setBypassCSP", enabled=True)
     await cdp.send("Page.addScriptToEvaluateOnNewDocument", source=POINTER_JS)
     # "inject": a JS file (relative to the scenes file) run on every page load, e.g. hiding the person's name.
     if cfg.get("inject"):

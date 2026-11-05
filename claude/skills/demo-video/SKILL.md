@@ -166,6 +166,11 @@ way back.) Wait for the card's font to load before showing it.
   wobbling title and a "Department of…" credit. An 80s trailer slams its title in over a
   black frame. An infomercial bursts a starburst with "But wait…". Build these as a custom
   card (`{"html", "css"}` in the scenes file); it is drawn and timed like the built-in one.
+  Use your own classes on plain `div`s, not `h1`: the built-in headline style targets
+  `.__card h1` and wins over a single class, so a custom title animation never runs.
+  Preview every card with `card_preview.py` before the trial run. The recorder bypasses
+  the page's Content-Security-Policy so web fonts load on the app's own pages. A preview
+  on a blank page can't show that, so check a lowercase line in the take.
 - The built-in card is the fallback when no tone is chosen: a large centred headline
   with a sheen sweeping across it, and a glowing line that draws across with dots popping
   in along it. Under it goes whatever the card needs: a subtitle, a catchphrase, or up to
