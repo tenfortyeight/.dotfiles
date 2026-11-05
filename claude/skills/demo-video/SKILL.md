@@ -128,9 +128,11 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   as one continuous take and note each scene's start on the video clock; a scene runs
   for its voice clip plus a breath, or longer if its steps need it.
 - **No long silent holds.** A couple of quiet seconds on something that has just landed
-  is fine. Tens of seconds is not: it starts to feel uneasy. A wait for an answer is
-  fast-forwarded to play in about a second (`{"ff": seconds, "to": 1}`), starting the
-  moment the voice ends, and then the result sits alone for 2–3 s, no more. The recorder
+  is fine. Tens of seconds is awkward silence. A wait for an answer is fast-forwarded to
+  play in about a second (`{"ff": seconds, "to": 1}`), starting the moment the voice ends.
+  Then the next line plays while the answer shows: the answer is backdrop, not the point,
+  so the voice talking over it is better than the picture sitting there alone. At most
+  2–3 s with no voice. The recorder
   warns about any scene that holds more than 6 s past its voice; fix each one before
   handing over.
 - **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the

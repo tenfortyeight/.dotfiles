@@ -290,7 +290,7 @@ class Recorder:
         elif "ff" in step:
             # Fast-forward a wait the viewer needn't sit through (an answer being written): recorded in
             # real time, played back in `to` seconds (default 1) or `factor` times faster. Keep it clear
-            # of a voice clip, which isn't sped up, and follow it with 2-3 s on the result, no more.
+            # of a voice clip, which isn't sped up. Then let the next line play over the result: no awkward silence.
             start = self.now()
             await asyncio.sleep(step["ff"])
             factor = step.get("factor") or step["ff"] / step.get("to", 1.0)
