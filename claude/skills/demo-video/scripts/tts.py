@@ -72,6 +72,27 @@ def scenes(scenes_file, out_dir, model_dir):
         lengths[path.name] = say(kokoro, scene["say"], voice, speed, path)
         print(path.name, f"{lengths[path.name]:.2f}s", scene["name"])
     (out_dir / "lengths.json").write_text(json.dumps(lengths, indent=1))
+    report_endings(out_dir, cfg["scenes"])
+
+
+def report_endings(out_dir, scenes):
+    """Warn about clips whose pitch doesn't fall at the end: they sound unfinished, like a question.
+    The closing line matters most. Rewording its last words fixes it ("remembers" ended flat,
+    "remembers it all" fell); punctuation, pace and splitting sentences did not."""
+    from clip_ends import tail_pitch, track
+    import numpy as np
+    paths = [out_dir / f"{i:02d}.wav" for i in range(len(scenes))]
+    tracks = [track(p) for p in paths]
+    median = np.nanmedian(np.concatenate(tracks))
+    for i, (path, f0) in enumerate(zip(paths, tracks)):
+        end = tail_pitch(f0)
+        if end is None:
+            continue
+        st = 12 * np.log2(end / median)
+        last = i == len(scenes) - 1
+        if st > -2:
+            print(f"  {path.name} ({scenes[i]['name']}) ends {st:+.1f} semitones: it doesn't fall"
+                  + (", and it is the closing line: reword its last words" if last else ""))
 
 
 def sample(model_dir, out_dir, voices):

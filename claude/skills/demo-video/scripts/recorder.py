@@ -28,7 +28,7 @@ A scene is {"name", "say", "card"?, "steps"?}.
       {"key": "Escape", "vk": 27}          press a key; "modifiers" 1 Alt 2 Ctrl 4 Meta 8 Shift
       {"go": "/path?q=1", "settle": 1.5}   in-app navigation for a single-page app (pushState + popstate)
       {"until": "js", "settle": s}         hold until a JS condition is true; "timeout" per step
-      {"ff": seconds, "factor": 6}         wait, played back faster (an answer being written); keep clear of voice
+      {"ff": seconds, "to": 1}             wait, played back in `to` s (or "factor": n); keep clear of voice
       {"eval": "js"}                       run JS in the page (a hash change is followed by a short wait)
       {"wait": seconds}
 A scene holds for its voice clip + "breath" (cards at least CARD_MIN seconds),
@@ -289,10 +289,12 @@ class Recorder:
             await asyncio.sleep(step.get("settle", 0))
         elif "ff" in step:
             # Fast-forward a wait the viewer needn't sit through (an answer being written): recorded in
-            # real time, played back `factor` times faster. Keep it clear of a voice clip, which isn't sped up.
+            # real time, played back in `to` seconds (default 1) or `factor` times faster. Keep it clear
+            # of a voice clip, which isn't sped up, and follow it with 2-3 s on the result, no more.
             start = self.now()
             await asyncio.sleep(step["ff"])
-            self.ff.append((start, self.now(), step.get("factor", 6)))
+            factor = step.get("factor") or step["ff"] / step.get("to", 1.0)
+            self.ff.append((start, self.now(), max(factor, 1.0)))
         elif "wait" in step:
             await asyncio.sleep(step["wait"])
         else:

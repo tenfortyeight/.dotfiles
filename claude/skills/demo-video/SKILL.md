@@ -128,8 +128,9 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   as one continuous take and note each scene's start on the video clock; a scene runs
   for its voice clip plus a breath, or longer if its steps need it.
 - **No long silent holds.** A couple of quiet seconds on something that has just landed
-  is fine. Tens of seconds is not: it starts to feel uneasy. Fast-forward a long wait for
-  an answer (`ff`), and the long beat after it lands too, or give it a line. The recorder
+  is fine. Tens of seconds is not: it starts to feel uneasy. A wait for an answer is
+  fast-forwarded to play in about a second (`{"ff": seconds, "to": 1}`), starting the
+  moment the voice ends, and then the result sits alone for 2–3 s, no more. The recorder
   warns about any scene that holds more than 6 s past its voice; fix each one before
   handing over.
 - **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the
@@ -206,6 +207,12 @@ way back.) Wait for the card's font to load before showing it.
 - **One clip per scene, generated before recording.** Measure each clip's length and
   hold its scene at least that long — the picture waits for the voice, never the other
   way round. Place each clip at its scene's start on the video clock.
+- **Every clip should end falling, and the closing line must.** A line whose pitch stays
+  flat or rises at the end sounds like a question, or like more is coming. `tts.py`
+  measures each clip's last half second against the voice (`clip_ends.py`) and warns about
+  any that doesn't fall by 2 semitones. The fix is the last words, not the punctuation:
+  "Munin remembers." ended flat whatever the commas, pace or sentence split, and
+  "Munin remembers it all." fell. Change the card's text to match.
 
 ## 4. Sound and assembly (ffmpeg)
 
