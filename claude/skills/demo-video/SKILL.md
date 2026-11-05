@@ -26,6 +26,19 @@ otherwise: a random English voice, 1.5–3 minutes, and a non-production environ
 the user leaves the choice open. If the user wants to pick the voice, give them samples to
 listen to (see Voice) rather than a list of names.
 
+**Tone** — pick a feeling with the user before the script, in the same one question: a
+genre the video plays as, such as an 80s action trailer, a 70s heist film, a mafia movie,
+a nature documentary or a noir detective. Offer three that suit the thing, with your
+recommendation first. A plain product walkthrough with no tone comes out flat. The tone
+carries through everything except the app itself:
+- **Script**: lines written in the genre's register ("In a world where docs go stale…"),
+  still saying plainly what is on screen and why it matters.
+- **Cards**: a display font and colours that belong to the genre, plus texture through
+  `style.css` (film grain, a letterbox, a neon glow, a typewriter reveal). The app's own
+  look stays as it is between the cards.
+- **Voice**: the voice and `speed` that suit it, such as a deep, slow trailer voice.
+- **Sound**: a pad or music bed in the genre's mood, still about 25 dB under the voice.
+
 Work in the session's scratch folder; everything — frames, clips, the venv — goes there.
 
 **Subtitles** are optional, off unless asked. With them on, write an `.srt` from the
@@ -88,6 +101,11 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   viewport 1600×900 at `deviceScaleFactor` 2, scaled to 1080p. Record the whole video
   as one continuous take and note each scene's start on the video clock; a scene runs
   for its voice clip plus a breath, or longer if its steps need it.
+- **No silent holds.** Wherever the picture holds with no voice over it, such as a wait
+  for an answer or a pause on an answer that has landed, fast-forward it (`ff`) or give it
+  a line. That includes the beat after the answer: show it landing, then move on or keep
+  talking over it. The recorder warns about any scene that holds more than 2.5 s past its
+  voice; fix each one before handing over.
 - **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the
   recording. Serve local files over http.
 - **Zoom** with a CSS transform on `<body>` and `overflow: hidden` on `<html>`, so the
@@ -113,12 +131,14 @@ done — no navigation, so input keeps working and the app keeps its state. (Rep
 page with `document.write` also works, but loses the app's state and flashes white on the
 way back.) Wait for the card's font to load before showing it.
 
-- Take the look from the app: its darkest surface as the background, its accent for
-  the wordmark, its display font. If the app opens in its light theme, pass the dark
-  values in explicitly. With no theme to take from, use a near-black background, one
-  bright accent and Outfit from Google Fonts.
-- A large headline with a sheen sweeping across it, a glowing line that draws across
-  with dots popping in along it, and three tag pills naming what the feature does.
+- The look comes from the tone first and the app second. Start from the app's darkest
+  surface, its accent and its display font, then bend them toward the genre. If the app
+  opens in its light theme, pass the dark values in explicitly. With neither to go on,
+  use a near-black background, one bright accent and Outfit from Google Fonts.
+- A large centred headline with a sheen sweeping across it, a glowing line that draws
+  across with dots popping in along it, and under it up to three words naming what the
+  feature does, on one spaced, centred line (`tags`). No pills: they sat badly and read
+  as buttons.
 - The outro reuses the card with the closing line and subline.
 
 ## 3. Voice

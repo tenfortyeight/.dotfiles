@@ -14,7 +14,8 @@ The scenes file may set "inject" (a JS file, beside it, run on every page load: 
 name, helpers for steps) and "first_load" (seconds to wait after the first navigation, default 2.5).
 
 A scene is {"name", "say", "card"?, "steps"?}.
-  - "card": {"headline", "pills"?, "subline"?, "code"?} draws a card over the page (no navigation).
+  - "card": {"headline", "tags"?, "subline"?, "code"?} draws a card over the page (no navigation).
+    "tags" (up to three words) sit on one centred line under the headline, not in pills.
     "code": true sets the subline in monospace, so a command's "--" is not drawn as a dash.
     Colours and font come from the scenes file's "style" {accent, bg, font}; the flags override it.
   - "steps" run at scene start, one after another. Each is one of:
@@ -57,7 +58,8 @@ import websockets
 CARD_MIN = 5.0
 ZOOM_SECONDS = 0.9
 GLIDE_SECONDS = 0.7
-SHORT_WAIT = 0.3  # after a hash change, so the new view renders before the next step
+SHORT_WAIT = 0.3
+SILENT_HOLD = 2.5  # seconds a scene may hold past its voice and breath before the recorder warns  # after a hash change, so the new view renders before the next step
 
 POINTER_JS = """
 (() => {
@@ -97,7 +99,7 @@ CARD_CSS = """
   justify-content:center;gap:34px;background:%(bg)s;color:#fff;font-family:%(font)s,system-ui,sans-serif;
   animation:__in .5s ease-out both, __out .5s ease-in %(out_at)ss forwards}
 @keyframes __in{from{opacity:0}} @keyframes __out{to{opacity:0}}
-.__card h1{margin:0;font-weight:700;font-size:112px;letter-spacing:-.03em;line-height:1.05;
+.__card h1{margin:0;text-align:center;font-weight:700;font-size:112px;letter-spacing:-.03em;line-height:1.05;
   background:linear-gradient(100deg,%(accent)s 0%%,%(accent)s 38%%,#fff 50%%,%(accent)s 62%%,%(accent)s 100%%);
   background-size:300%% 100%%;-webkit-background-clip:text;background-clip:text;color:transparent;
   animation:__sheen 2.6s ease-in-out .5s both}
@@ -108,23 +110,25 @@ CARD_CSS = """
 .__card .line i{position:absolute;top:-4px;width:11px;height:11px;border-radius:50%%;background:#fff;
   box-shadow:0 0 12px %(accent)s;animation:__pop .4s ease-out both}
 @keyframes __pop{from{transform:scale(0)}}
-.__card .pills{display:flex;gap:16px}
-.__card .pills span{padding:10px 24px;border:1.5px solid %(accent)s;border-radius:999px;font-size:26px;
-  color:%(accent)s;animation:__up .6s ease-out both}
+.__card .tags{display:flex;align-items:center;justify-content:center;gap:26px;font-size:24px;
+  letter-spacing:.34em;text-transform:uppercase;color:%(accent)s}
+.__card .tags span{margin-right:-.34em;animation:__up .6s ease-out both}  /* letter-spacing trails the last letter */
+.__card .tags b{width:6px;height:6px;border-radius:50%%;background:currentColor;opacity:.6}
 @keyframes __up{from{opacity:0;transform:translateY(14px)}}
 .__card .sub{font-size:30px;opacity:.75;animation:__up .6s ease-out 1.3s both}
 .__card .sub.code{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:26px}
+%(css)s
 """
 
 
 def card_js(card, style, hold):
     """JS that draws the card as an overlay on the loaded app page."""
     dots = "".join(f'<i style="left:{p}%;animation-delay:{0.5 + p / 100 * 1.1:.2f}s"></i>' for p in (0, 33, 66, 100))
-    pills = "".join(f'<span style="animation-delay:{0.9 + n * 0.15:.2f}s">{t}</span>' for n, t in enumerate(card.get("pills", [])))
+    tags = "<b></b>".join(f'<span style="animation-delay:{0.9 + n * 0.15:.2f}s">{t}</span>' for n, t in enumerate(card.get("tags", [])))
     sub = (f'<div class="sub{" code" if card.get("code") else ""}">{card["subline"]}</div>'
            if card.get("subline") else "")  # "code": true sets the subline in monospace, e.g. a command
-    css = CARD_CSS % {**style, "out_at": max(hold - 0.5, 1)}
-    html = f'<h1>{card["headline"]}</h1><div class="line">{dots}</div><div class="pills">{pills}</div>{sub}'
+    css = CARD_CSS % {**style, "css": style.get("css", ""), "out_at": max(hold - 0.5, 1)}
+    html = f'<h1>{card["headline"]}</h1><div class="line">{dots}</div><div class="tags">{tags}</div>{sub}'
     return f"""(async () => {{
       const link = document.createElement('link'); link.rel = 'stylesheet';
       link.href = 'https://fonts.googleapis.com/css2?family={style["font"].replace(" ", "+")}:wght@700&display=swap';
@@ -377,7 +381,8 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
     await cdp.js(POINTER_JS)
     cfg_style = cfg.get("style", {})
     style = {"bg": args.bg or cfg_style.get("bg") or await cdp.js("getComputedStyle(document.body).backgroundColor"),
-             "accent": args.accent or cfg_style.get("accent", "#e8a94a"), "font": args.font or cfg_style.get("font", "Outfit")}
+             "accent": args.accent or cfg_style.get("accent", "#e8a94a"), "font": args.font or cfg_style.get("font", "Outfit"),
+             "css": cfg_style.get("css", "")}  # the tone's extra card CSS: grain, letterbox, a neon glow
     await cdp.send("Page.startScreencast", format="jpeg", quality=88, maxWidth=1920, maxHeight=1080, everyNthFrame=1)
     while not rec.t0:
         await cdp.js("document.body.style.outline = '0'")  # nudge Chrome into sending the first frame
@@ -395,7 +400,7 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
         for step in scene.get("steps", []):
             await rec.run_step(step, args.step_timeout, args.probe)
         await asyncio.sleep(max(0, start + hold - rec.now()))
-        timeline.append({"name": scene["name"], "start": start, "end": rec.now()})
+        timeline.append({"name": scene["name"], "start": start, "end": rec.now(), "voiced": hold})
 
     end = rec.now() + 0.3
     await asyncio.sleep(0.3)
@@ -418,6 +423,10 @@ def write_outputs(rec, timeline, end):
     scenes = [{**s, "start": at(s["start"]), "end": at(s["end"])} for s in timeline]
     (rec.out / "timeline.json").write_text(json.dumps({"total": at(end), "scenes": scenes}, indent=1))
     print(f"{len(rec.frames)} frames, {at(end):.1f}s played back ({end:.1f}s recorded)")
+    for s in scenes:
+        silent = s["end"] - s["start"] - s["voiced"]
+        if silent > SILENT_HOLD:
+            print(f"  scene {s['name']} holds {silent:.1f}s with no voice: fast-forward it (ff) or give it a line")
 
 
 if __name__ == "__main__":

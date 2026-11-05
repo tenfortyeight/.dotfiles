@@ -40,3 +40,4 @@ claude/**/*.bak*
 claude/**/*.local.json
 claude/hooks/peon-ping/
 claude/**/.credentials*
+__pycache__/
