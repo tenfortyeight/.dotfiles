@@ -67,10 +67,11 @@
   "voice: a Kokoro voice name; leave it out for a random English one (tts.py --sample to hear them). speed: voice pace, default 1.0. breath: seconds of silence after each clip.",
   "style (optional): accent = wordmark and tag colour, bg = card background (default: the page's own), font = a Google Fonts family, css = the tone's extra card CSS (grain, letterbox, glow). --accent/--bg/--font on recorder.py override it.",
   "say: the voice-over for the scene; the scene holds for it. Cards stay at least 5 seconds.",
-  "card: headline (<br> for two lines), tags (up to three words, one centred line), subline (outro only, optional).",
   "A hash change in an eval step is followed by a short automatic wait.",
   "steps run in order at scene start: zoom {selector|null, pad px}, move/click selector, type {text}, key {key, vk, modifiers}, go path (SPA navigation), until js (hold till true), ff seconds + factor (fast-forward a wait), eval js, wait seconds. Any step may set its own timeout.",
   "inject (optional): a JS file beside the scenes file, run on every page load: hide the person's name, define helpers such as a find-by-text tagger.",
-  "card.code: true sets the subline in monospace, for a command."
+  "card.code: true sets the subline in monospace, for a command.",
+  "card: headline (<br> for two lines), then any of: tags (up to three words on one centred line), subline (a subtitle, catchphrase or address; intro or outro), code: true (subline in monospace). Or html + css for a whole custom card in the tone.",
+  "sound (optional): none (default), drone (low tension), or an audio file beside the scenes file. Pick it for the tone; most videos need none."
  ]
 }

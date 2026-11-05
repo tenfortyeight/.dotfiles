@@ -33,11 +33,12 @@ recommendation first. A plain product walkthrough with no tone comes out flat. T
 carries through everything except the app itself:
 - **Script**: lines written in the genre's register ("In a world where docs go stale…"),
   still saying plainly what is on screen and why it matters.
-- **Cards**: a display font and colours that belong to the genre, plus texture through
-  `style.css` (film grain, a letterbox, a neon glow, a typewriter reveal). The app's own
-  look stays as it is between the cards.
+- **Cards**: designed for the genre, not filled into a template (see Intro and outro
+  cards). The app's own look stays as it is between the cards.
 - **Voice**: the voice and `speed` that suit it, such as a deep, slow trailer voice.
-- **Sound**: a pad or music bed in the genre's mood, still about 25 dB under the voice.
+- **Sound**: only if the genre calls for it. The default is the voice alone. A low drone
+  suits tension, a music bed suits an infomercial, a projector's whirr suits an old reel.
+  A bed in every video stops meaning anything. Keep any bed about 25 dB under the voice.
 
 Work in the session's scratch folder; everything — frames, clips, the venv — goes there.
 
@@ -101,11 +102,11 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   viewport 1600×900 at `deviceScaleFactor` 2, scaled to 1080p. Record the whole video
   as one continuous take and note each scene's start on the video clock; a scene runs
   for its voice clip plus a breath, or longer if its steps need it.
-- **No silent holds.** Wherever the picture holds with no voice over it, such as a wait
-  for an answer or a pause on an answer that has landed, fast-forward it (`ff`) or give it
-  a line. That includes the beat after the answer: show it landing, then move on or keep
-  talking over it. The recorder warns about any scene that holds more than 2.5 s past its
-  voice; fix each one before handing over.
+- **No long silent holds.** A couple of quiet seconds on something that has just landed
+  is fine. Tens of seconds is not: it starts to feel uneasy. Fast-forward a long wait for
+  an answer (`ff`), and the long beat after it lands too, or give it a line. The recorder
+  warns about any scene that holds more than 6 s past its voice; fix each one before
+  handing over.
 - **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the
   recording. Serve local files over http.
 - **Zoom** with a CSS transform on `<body>` and `overflow: hidden` on `<html>`, so the
@@ -135,9 +136,15 @@ way back.) Wait for the card's font to load before showing it.
   surface, its accent and its display font, then bend them toward the genre. If the app
   opens in its light theme, pass the dark values in explicitly. With neither to go on,
   use a near-black background, one bright accent and Outfit from Google Fonts.
-- A large centred headline with a sheen sweeping across it, a glowing line that draws
-  across with dots popping in along it, and under it up to three words naming what the
-  feature does, on one spaced, centred line (`tags`). No pills: they sat badly and read
+- The intro and outro are where the tone shows most, so design them for it. A 40s or 50s
+  army information film or submarine picture opens on a scratched film-reel countdown, a
+  wobbling title and a "Department of…" credit. An 80s trailer slams its title in over a
+  black frame. An infomercial bursts a starburst with "But wait…". Build these as a custom
+  card (`{"html", "css"}` in the scenes file); it is drawn and timed like the built-in one.
+- The built-in card is the fallback when no tone is chosen: a large centred headline
+  with a sheen sweeping across it, and a glowing line that draws across with dots popping
+  in along it. Under it goes whatever the card needs: a subtitle, a catchphrase, or up to
+  three words on one spaced, centred line (`tags`). Never pills, which sat badly and read
   as buttons.
 - The outro reuses the card with the closing line and subline.
 
@@ -176,9 +183,10 @@ way back.) Wait for the card's font to load before showing it.
   build an ffmpeg concat list with each frame's duration and read it with
   `-fps_mode vfr`. Without that, ffmpeg assumes 25 fps and the video quietly comes out
   seconds short.
-- Normalise the voice to **-16 LUFS** (`loudnorm`). Put a quiet generated pad about
-  25 dB under it — measure both, since the right volume factor depends on the pad's
-  source level.
+- Normalise the voice to **-16 LUFS** (`loudnorm`). A bed under it is the tone's choice
+  (`"sound"` in the scenes file: none by default, `drone`, or a music file). If there is
+  one, sit it about 25 dB under the voice. Measure both, since the right volume factor
+  depends on the bed's source level.
 - **Pad the audio to the video's length** (`apad`), or the end of the outro is cut.
 - Output **H.264 + AAC, 48 kHz stereo**. A 24 kHz mono track once played silent in
   QuickTime.

@@ -14,6 +14,8 @@ The scenes file may set "inject" (a JS file, beside it, run on every page load: 
 name, helpers for steps) and "first_load" (seconds to wait after the first navigation, default 2.5).
 
 A scene is {"name", "say", "card"?, "steps"?}.
+  - a card may instead be {"html", "css"?}: a whole custom card the tone calls for (a film-reel
+    countdown, a trailer title, an infomercial starburst), drawn and timed like the built-in one.
   - "card": {"headline", "tags"?, "subline"?, "code"?} draws a card over the page (no navigation).
     "tags" (up to three words) sit on one centred line under the headline, not in pills.
     "code": true sets the subline in monospace, so a command's "--" is not drawn as a dash.
@@ -59,7 +61,7 @@ CARD_MIN = 5.0
 ZOOM_SECONDS = 0.9
 GLIDE_SECONDS = 0.7
 SHORT_WAIT = 0.3
-SILENT_HOLD = 2.5  # seconds a scene may hold past its voice and breath before the recorder warns  # after a hash change, so the new view renders before the next step
+SILENT_HOLD = 6.0  # a few quiet seconds are fine; past this a hold starts to feel uneasy, so warn  # after a hash change, so the new view renders before the next step
 
 POINTER_JS = """
 (() => {
@@ -127,8 +129,9 @@ def card_js(card, style, hold):
     tags = "<b></b>".join(f'<span style="animation-delay:{0.9 + n * 0.15:.2f}s">{t}</span>' for n, t in enumerate(card.get("tags", [])))
     sub = (f'<div class="sub{" code" if card.get("code") else ""}">{card["subline"]}</div>'
            if card.get("subline") else "")  # "code": true sets the subline in monospace, e.g. a command
-    css = CARD_CSS % {**style, "css": style.get("css", ""), "out_at": max(hold - 0.5, 1)}
-    html = f'<h1>{card["headline"]}</h1><div class="line">{dots}</div><div class="tags">{tags}</div>{sub}'
+    css = CARD_CSS % {**style, "css": style.get("css", ""), "out_at": max(hold - 0.5, 1)} + card.get("css", "")
+    tag_line = f'<div class="tags">{tags}</div>' if tags else ""
+    html = card.get("html") or f'<h1>{card["headline"]}</h1><div class="line">{dots}</div>{tag_line}{sub}'
     return f"""(async () => {{
       const link = document.createElement('link'); link.rel = 'stylesheet';
       link.href = 'https://fonts.googleapis.com/css2?family={style["font"].replace(" ", "+")}:wght@700&display=swap';
