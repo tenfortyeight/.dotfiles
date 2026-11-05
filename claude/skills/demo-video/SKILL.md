@@ -4,8 +4,9 @@ description: >
   Use when the user asks for a demo video, walkthrough or screencast of a feature
   or flow in a web app, or types /demo-video. Records the real app live in
   headless Chrome, adds an animated intro and outro and a voice-over, and hands
-  back an mp4. The script is written first and approved before anything is
-  recorded.
+  back an mp4. Opens with a short interview (what it shows, tone, environment,
+  voice), each question with a recommended choice and room to propose your own;
+  the script is then approved before anything is recorded.
 user-invocable: true
 ---
 
@@ -18,18 +19,42 @@ animated intro and outro and a calm voice-over. A good demo comes down to three 
 an intro that says what this is, a voice that explains what you are looking at, and an
 outro that leaves one line behind. Everything else serves those.
 
-## Inputs
+## Kickoff interview
 
-You need the **feature or flow**, the **app**, the **environment** and its **URL**. Ask
-for whatever is missing in one question, then carry on. Defaults unless the user says
-otherwise: a random English voice, 1.5–3 minutes, and a non-production environment when
-the user leaves the choice open. If the user wants to pick the voice, give them samples to
-listen to (see Voice) rather than a list of names.
+Every demo video starts with one short interview, run with `AskUserQuestion`, before
+the script. First look at the app, enough to recommend something real: what it does,
+which flows show it best, what data the environments hold. Then ask once, up to four
+questions in one call:
 
-**Tone** — pick a feeling with the user before the script, in the same one question: a
-genre the video plays as, such as an 80s action trailer, a 70s heist film, a mafia movie,
-a nature documentary or a noir detective. Offer three that suit the thing, with your
-recommendation first. A plain product walkthrough with no tone comes out flat. The tone
+1. **What it shows**: the story the video tells, such as "find it → see how it connects
+   → ask about it", or a single flow up close. Offer two or three paths through the real
+   app.
+2. **Tone**: the genre the video plays as (see below). Offer three that suit the thing.
+3. **Where it is recorded**: the environment, with what each one costs. For example,
+   dev may hold thin data, and prod may need a sign-in done by hand.
+4. **Voice and length**: an accent, a gender and a pace that suit the tone, with 1.5–3
+   minutes as the default. Offer "Let me hear samples" as one of the options (see Voice).
+
+Rules for every question:
+- **There is always a recommended path.** Put it first, mark it "(Recommended)", and say
+  in its description why it fits. The user should be able to accept every first option
+  and get a good video.
+- **Two to four real choices**, each different in kind, not three versions of one idea.
+  Use `preview` to show what a choice looks like: an opening line of the script, or a
+  sketch of the intro card.
+- **Room to propose their own.** "Other" is always there; the question text says so,
+  for example "…or describe your own theme". Take what they write as the brief, not as a
+  hint to steer back to an option.
+- **Skip what was already said.** A question the request already answered isn't asked;
+  name the choice in a line instead. Don't interview someone who gave a precise brief.
+
+Subtitles are off unless asked, and the environment defaults to non-production when the
+user leaves it open. After the interview comes "can we get in", then the script, which
+is still the one stop before recording.
+
+**Tone** is the genre the video plays as, such as an 80s action trailer, a 70s heist
+film, a mafia movie, a 50s army information film, an infomercial, a nature documentary
+or a noir detective. A plain product walkthrough with no tone comes out flat. The tone
 carries through everything except the app itself:
 - **Script**: lines written in the genre's register ("In a world where docs go stale…"),
   still saying plainly what is on screen and why it matters.
