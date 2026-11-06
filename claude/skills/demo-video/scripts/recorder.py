@@ -7,19 +7,27 @@ Outputs: OUT_DIR/frames/*.jpg, OUT_DIR/frames.txt (ffmpeg concat list) and
 usage: recorder.py SCENES_JSON LENGTHS_JSON OUT_DIR URL [--chrome PATH] [--port N]
                    [--width 1600 --height 900] [--accent #hex --bg #hex --font "Name"]
                    [--timeout 600] [--step-timeout 30] [--auth-host HOST ...]
-                   [--cookies-from PORT --cookie-domain SUBSTR ...] [--probe]
+                   [--cookies-from PORT --cookie-domain SUBSTR ...] [--probe] [--serve DIR]
 Run with a python that has `websockets`.
+
+With --serve DIR the page is one you built yourself (an animated diagram, a mock-up): DIR is served
+over http on a free port and URL is relative to it, e.g. `--serve site index.html`. Each scene's steps
+then drive the page, typically {"eval": "play('scene')"}.
+
+The scenes file may set "pointer": an SVG (or other HTML) for the tone's own pointer, or "" to hide it
+when the page draws and moves one itself.
 
 The scenes file may set "inject" (a JS file, beside it, run on every page load: hiding the person's
 name, helpers for steps) and "first_load" (seconds to wait after the first navigation, default 2.5).
 
 A scene is {"name", "say", "card"?, "steps"?}.
-  - a card may instead be {"html", "css"?}: a whole custom card the tone calls for (a film-reel
+  - a card may instead be {"html", "css"?} or {"file": "cards/intro.html"} (HTML with its <style>): a whole custom card the tone calls for (a film-reel
     countdown, a trailer title, an infomercial starburst), drawn and timed like the built-in one.
   - "card": {"headline", "tags"?, "subline"?, "code"?} draws a card over the page (no navigation).
     "tags" (up to three words) sit on one centred line under the headline, not in pills.
     "code": true sets the subline in monospace, so a command's "--" is not drawn as a dash.
-    Colours and font come from the scenes file's "style" {accent, bg, font}; the flags override it.
+    Colours and font come from the scenes file's "style" {accent, bg, font, font_file?}; the flags override it.
+    "font_file" (a .woff2 beside the scenes file) embeds a face Google Fonts doesn't have, such as the app's own.
   - "steps" run at scene start, one after another. Each is one of:
       {"zoom": selector|null, "pad": px}   camera onto an element (null = whole page)
       {"move": selector}                   glide the pointer there
@@ -51,8 +59,10 @@ them (React Flow and the like) never settle.
 --probe is a trial run: a failed step is reported and the run goes on, so one pass lists every miss.
 Run it with every clip length set to 1 and look at contact.py's sheet before the real take.
 """
-import argparse, asyncio, base64, json, os, subprocess, sys, tempfile, time, urllib.request
-from urllib.parse import urlparse
+import argparse, asyncio, base64, json, os, subprocess, sys, tempfile, threading, time, urllib.request
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urljoin, urlparse
 from pathlib import Path
 
 import websockets
@@ -77,6 +87,7 @@ POINTER_JS = """
     'to{transform:translate(-50%%,-50%%) scale(1.6);opacity:0}}';
   document.documentElement.appendChild(style);
   window.__pointer = {
+    el,
     to(x, y) { el.style.transform = `translate(${x}px,${y}px)`; },
     ripple(x, y) {
       const r = document.createElement('div');
@@ -123,6 +134,40 @@ CARD_CSS = """
 """
 
 
+def card_style(cfg, base, page_bg=None, accent=None, bg=None, font=None):
+    """The cards' look from the scenes file's "style", flags overriding it. "font_file" (beside the
+    scenes file) embeds a font the app ships itself, such as a licensed display face that Google Fonts
+    doesn't have, so cards use it on any page, the blank preview page included."""
+    s = cfg.get("style", {})
+    style = {"bg": bg or s.get("bg") or page_bg or "#101418", "accent": accent or s.get("accent", "#e8a94a"),
+             "font": font or s.get("font", "Outfit"), "css": s.get("css", ""), "font_face": ""}
+    if s.get("font_file"):
+        data = base64.b64encode((Path(base) / s["font_file"]).read_bytes()).decode()
+        style["font_face"] = (f"@font-face{{font-family:'{style['font']}';font-weight:100 900;"
+                              f"src:url(data:font/woff2;base64,{data}) format('woff2')}}")
+    return style
+
+
+def load_card(card, base):
+    """A custom card may live in its own file, {"file": "cards/intro.html"} (its <style> inside):
+    easier to write and read than HTML escaped into JSON."""
+    if "file" not in card:
+        return card
+    return {**card, "html": (Path(base) / card["file"]).read_text()}
+
+
+class QuietHandler(SimpleHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+
+def serve(root):
+    """Serve a folder over http on a free port, in a background thread: never file:// (it breaks CDP input)."""
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(root)))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return f"http://127.0.0.1:{server.server_port}/"
+
+
 def card_js(card, style, hold):
     """JS that draws the card as an overlay on the loaded app page."""
     dots = "".join(f'<i style="left:{p}%;animation-delay:{0.5 + p / 100 * 1.1:.2f}s"></i>' for p in (0, 33, 66, 100))
@@ -132,14 +177,20 @@ def card_js(card, style, hold):
     css = CARD_CSS % {**style, "css": style.get("css", ""), "out_at": max(hold - 0.5, 1)} + card.get("css", "")
     tag_line = f'<div class="tags">{tags}</div>' if tags else ""
     html = card.get("html") or f'<h1>{card["headline"]}</h1><div class="line">{dots}</div>{tag_line}{sub}'
-    return f"""(async () => {{
-      const link = document.createElement('link'); link.rel = 'stylesheet';
+    if style.get("font_face"):
+        css = style["font_face"] + css
+        load_font = ""
+    else:
+        load_font = f"""const link = document.createElement('link'); link.rel = 'stylesheet';
       link.href = 'https://fonts.googleapis.com/css2?family={style["font"].replace(" ", "+")}:wght@700&display=swap';
-      document.head.appendChild(link);
-      try {{ await document.fonts.load('700 112px "{style["font"]}"'); }} catch (e) {{}}
+      document.head.appendChild(link);"""
+    return f"""(async () => {{
+      {load_font}
       const s = document.createElement('style'); s.className = '__cardstyle'; s.textContent = {json.dumps(css)};
+      document.documentElement.append(s);
+      try {{ await document.fonts.load('700 112px "{style["font"]}"'); }} catch (e) {{}}
       const c = document.createElement('div'); c.className = '__card'; c.innerHTML = {json.dumps(html)};
-      document.documentElement.append(s, c);
+      document.documentElement.append(c);
       setTimeout(() => {{ c.remove(); s.remove(); }}, {int(hold * 1000) + 200});
     }})()"""
 
@@ -382,15 +433,18 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
         await cdp.send("Page.addScriptToEvaluateOnNewDocument", source=inject)
     if args.cookies_from:
         await borrow_cookies(cdp, args.cookies_from, args.cookie_domain or [urlparse(args.url).hostname])
-    await cdp.send("Page.navigate", url=args.url)
+    # --serve DIR: the page is your own (an animated diagram, a mock), served locally; URL is relative to it.
+    url = urljoin(serve(args.serve), args.url) if args.serve else args.url
+    await cdp.send("Page.navigate", url=url)
     await asyncio.sleep(cfg.get("first_load", 2.5))
     # The "can we get in" check: print what loaded, so a login form is obvious.
     print("loaded:", await cdp.js("document.title"), "|", (await cdp.js("document.body.innerText"))[:80].replace("\n", " / "))
     await cdp.js(POINTER_JS)
-    cfg_style = cfg.get("style", {})
-    style = {"bg": args.bg or cfg_style.get("bg") or await cdp.js("getComputedStyle(document.body).backgroundColor"),
-             "accent": args.accent or cfg_style.get("accent", "#e8a94a"), "font": args.font or cfg_style.get("font", "Outfit"),
-             "css": cfg_style.get("css", "")}  # the tone's extra card CSS: grain, letterbox, a neon glow
+    if "pointer" in cfg:  # the tone's own pointer (an SVG), or "" when the page draws its own
+        await cdp.js(f"window.__pointer.el.innerHTML = {json.dumps(cfg['pointer'])}")
+    base = Path(args.scenes).parent
+    style = card_style(cfg, base, await cdp.js("getComputedStyle(document.body).backgroundColor"),
+                       args.accent, args.bg, args.font)  # style.css: the tone's extra card CSS
     await cdp.send("Page.startScreencast", format="jpeg", quality=88, maxWidth=1920, maxHeight=1080, everyNthFrame=1)
     while not rec.t0:
         await cdp.js("document.body.style.outline = '0'")  # nudge Chrome into sending the first frame
@@ -402,7 +456,7 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
         hold = clip + cfg.get("breath", 0.8)
         if "card" in scene:
             hold = max(hold, CARD_MIN)
-            await cdp.js(card_js(scene["card"], style, hold))
+            await cdp.js(card_js(load_card(scene["card"], base), style, hold))
         start = rec.now()
         print(f"scene {i} {scene['name']} @ {start:.1f}s hold {hold:.1f}s")
         for step in scene.get("steps", []):
@@ -448,6 +502,7 @@ if __name__ == "__main__":
     ap.add_argument("--step-timeout", type=float, default=30, help="seconds for one step")
     ap.add_argument("--auth-host", action="append", help="send $DEMO_AUTH_TOKEN as a bearer token to this host")
     ap.add_argument("--probe", action="store_true", help="trial run: report a failed step and carry on")
+    ap.add_argument("--serve", help="serve this folder over http and record URL relative to it (pages you built yourself)")
     ap.add_argument("--cookies-from", type=int, help="debug port of a Chrome signed in by hand; copy its cookies")
     ap.add_argument("--cookie-domain", action="append", help="with --cookies-from: domains to copy (default: the URL's host)")
     args = ap.parse_args()

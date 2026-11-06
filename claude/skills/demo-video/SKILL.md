@@ -75,7 +75,11 @@ script and the clip timings, and give it alongside the mp4.
 with pointer, zoom camera, cards and a timeout) and `assemble.py` (frames and clips → the
 mp4, optional subtitles); `scenes.example.json` shows the scene format they share.
 `contact.py` tiles one frame per scene of a recording and `check_frames.py` does the same
-for the finished mp4. Use
+for the finished mp4. A video with no live app (every scene an animated diagram you build) is
+the same pipeline: `recorder.py --serve DIR index.html` serves your page locally, each scene's
+step is `{"eval": "play('scene')"}`, `"pointer": ""` hides the arrow when the page draws its own,
+custom cards can live in files (`{"file": "cards/intro.html"}`), and `style.font_file` embeds the
+app's own display face when Google Fonts lacks it. Use
 and improve them rather than writing new ones, and put back whatever worked better, so
 the next video starts further along.
 

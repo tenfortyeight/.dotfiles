@@ -75,6 +75,7 @@ def main():
     ap.add_argument("--pad-level", type=float, default=0.07)
     a = ap.parse_args()
     rec, clips, out = Path(a.rec), Path(a.clips), Path(a.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
     cfg = json.loads(Path(a.scenes).read_text())
     scenes = cfg["scenes"]
     tl = json.loads((rec / "timeline.json").read_text())

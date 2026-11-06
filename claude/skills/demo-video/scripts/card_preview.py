@@ -5,31 +5,22 @@ Writes one row per card, one column per moment, so a title that never appears or
 animation that starts too late shows up before the real take. Run with a python that has
 `websockets`.
 """
-import argparse, asyncio, base64, json, subprocess, sys, tempfile, threading, urllib.request
-from functools import partial
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+import argparse, asyncio, base64, json, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
 
 import websockets
 
 sys.path.insert(0, str(Path(__file__).parent))
-from recorder import CARD_MIN, card_js  # noqa: E402
+from recorder import CARD_MIN, card_js, card_style, load_card, serve  # noqa: E402
 
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-
-
-class QuietHandler(SimpleHTTPRequestHandler):
-    def log_message(self, *args):
-        pass
 
 
 def serve_blank(bg):
     """A blank page over http (a file:// page breaks CDP input), on a free port."""
     root = Path(tempfile.mkdtemp(prefix="card-"))
     (root / "index.html").write_text(f'<!doctype html><body style="margin:0;background:{bg}"></body>')
-    server = HTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=root))
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    return f"http://127.0.0.1:{server.server_port}/"
+    return serve(root)
 
 
 async def shoot(ws_url, url, cards, style, moments, out_dir):
@@ -68,10 +59,9 @@ def main():
     ap.add_argument("--port", type=int, default=9336)
     a = ap.parse_args()
     cfg = json.loads(Path(a.scenes).read_text())
-    s = cfg.get("style", {})
-    style = {"bg": s.get("bg", "#101418"), "accent": s.get("accent", "#e8a94a"), "font": s.get("font", "Outfit"),
-             "css": s.get("css", "")}
-    cards = [(sc["name"], sc["card"]) for sc in cfg["scenes"] if "card" in sc]
+    base = Path(a.scenes).parent
+    style = card_style(cfg, base)
+    cards = [(sc["name"], load_card(sc["card"], base)) for sc in cfg["scenes"] if "card" in sc]
     out_dir = Path(tempfile.mkdtemp(prefix="cards-", dir=Path(a.out).parent))
     chrome = subprocess.Popen([CHROME, "--headless=new", f"--remote-debugging-port={a.port}",
                                f"--user-data-dir={tempfile.mkdtemp(prefix='card-chrome-')}", "--remote-allow-origins=*",
