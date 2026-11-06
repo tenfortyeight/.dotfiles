@@ -54,8 +54,11 @@ is still the one stop before recording.
 
 **Tone** is the genre the video plays as, such as an 80s action trailer, a 70s heist
 film, a mafia movie, a 50s army information film, an infomercial, a nature documentary
-or a noir detective. A plain product walkthrough with no tone comes out flat. The tone
-carries through everything except the app itself:
+or a noir detective. A plain product walkthrough with no tone comes out flat. Play the
+tone louder than feels safe: a touch that reads in a still frame is gone at full speed,
+so a gag the user asked for (slapstick, say) needs a pratfall in most scenes and its
+sound effects, not a wobble here and there. The tone carries through everything except
+the app itself:
 - **Script**: lines written in the genre's register ("In a world where docs go stale…"),
   still saying plainly what is on screen and why it matters.
 - **Cards**: designed for the genre, not filled into a template (see Intro and outro
