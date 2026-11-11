@@ -45,7 +45,7 @@ Rules for every question:
 - **Room to propose their own.** "Other" is always there; the question text says so,
   for example "…or describe your own theme". Take what they write as the brief, not as a
   hint to steer back to an option.
-- **Skip what was already said.** A question the request already answered isn't asked;
+- **Skip what was already said.** A question the request or a `/scope` brief already answered isn't asked;
   name the choice in a line instead. Don't interview someone who gave a precise brief.
 
 Subtitles are off unless asked, and the environment defaults to non-production when the
