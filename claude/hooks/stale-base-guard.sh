@@ -9,14 +9,15 @@
 #
 # Warns, never blocks: being deliberately behind is legitimate (offline, a pinned
 # base, a deliberate revert), and a blocking gate on every commit would just earn
-# itself a reflexive override. Cheap because it only runs on `git commit` via the
-# `if` filter in settings.json.
+# itself a reflexive override. Filter here too: Codex runs shell hooks without
+# Claude's settings.json `if` filter.
 set -uo pipefail
 
 command -v jq >/dev/null 2>&1 || exit 0
 payload="$(cat 2>/dev/null || true)"
 cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
 [ -z "$cmd" ] && exit 0
+printf '%s' "$cmd" | grep -qE '(^|[;&|])[[:space:]]*git[[:space:]]+commit' || exit 0
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 git remote get-url origin >/dev/null 2>&1 || exit 0

@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{"type": "command", "command": "\"$HOME/.claude/hooks/sops-guard.sh\""}]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": "\"$HOME/.claude/hooks/deploy-ref-guard.sh\"", "timeout": 40},
+          {"type": "command", "command": "\"$HOME/.claude/hooks/aws-profile-guard.sh\""},
+          {"type": "command", "command": "\"$HOME/.claude/hooks/commit-hygiene.sh\""},
+          {"type": "command", "command": "\"$HOME/.claude/hooks/stale-base-guard.sh\"", "timeout": 20},
+          {"type": "command", "command": "\"$HOME/.claude/hooks/terraform-push-reminder.sh\"", "timeout": 15}
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{"type": "command", "command": "\"$HOME/.claude/hooks/post-edit-validate.sh\"", "timeout": 60}]
+      }
+    ],
+    "Stop": [
+      {"hooks": [{"type": "command", "command": "\"$HOME/.claude/hooks/verifier-gate.sh\"", "timeout": 30}]}
+    ],
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "\"$HOME/.claude/hooks/git-tidy.sh\"", "timeout": 100}]}
+    ]
+  }
+}

@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # PostToolUse(Edit|Write): run the right validator for the file that changed.
 set -uo pipefail
+command -v jq >/dev/null 2>&1 || exit 0
+# Shared helper is checked separately; runtime path also works through symlinks.
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/file-input.sh"
 payload="$(cat 2>/dev/null || true)"
-file="$(printf '%s' "$payload" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
-[ -z "$file" ] && exit 0
-[ -f "$file" ] || exit 0
+while IFS= read -r file; do
+[ -f "$file" ] || continue
 
 case "$file" in
   *.tf|*.tfvars)
@@ -29,4 +32,5 @@ case "$file" in
     command -v jq >/dev/null 2>&1 && { jq -e . "$file" >/dev/null 2>&1 || echo "⚠️  INVALID JSON: $file"; }
     ;;
 esac
+done < <(hook_files "$payload")
 exit 0

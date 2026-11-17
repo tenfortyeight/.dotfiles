@@ -115,6 +115,32 @@ check 2 "$REF" './scripts/example-create-app.sh' 'repo pattern -> blocked inside
 printf 'example-create-app(\n' > .claude/deploy-commands
 check 2 "$REF" './scripts/example-create-app.sh' 'malformed repo pattern -> fails closed'
 
+echo "== stale-base only checks commits =="
+mkdir -p "$TMP/bin"
+cat > "$TMP/bin/git" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$HOOK_TEST_LOG"
+case "$*" in
+  *symbolic-ref*) echo origin/main ;;
+  *--git-dir*) echo .git ;;
+  *fetch*) exit 1 ;;
+esac
+SH
+chmod +x "$TMP/bin/git"
+export HOOK_TEST_LOG="$TMP/git-calls"
+payload 'git status' | PATH="$TMP/bin:$PATH" bash "$HOOKS/stale-base-guard.sh"
+if [ ! -e "$HOOK_TEST_LOG" ]; then
+  pass=$((pass+1)); echo '  ok   unrelated command makes no git calls'
+else
+  fail=$((fail+1)); echo '  FAIL unrelated command checked stale base'
+fi
+payload 'git commit -m example' | PATH="$TMP/bin:$PATH" bash "$HOOKS/stale-base-guard.sh"
+if grep -q 'fetch --quiet origin main' "$HOOK_TEST_LOG"; then
+  pass=$((pass+1)); echo '  ok   commit checks stale base'
+else
+  fail=$((fail+1)); echo '  FAIL commit did not check stale base'
+fi
+
 cd "$ORIG_PWD" || true
 rm -rf "$TMP"
 

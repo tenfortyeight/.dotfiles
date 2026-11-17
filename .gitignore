@@ -30,6 +30,7 @@ claude/*
 !claude/CLAUDE.md
 !claude/README.md
 !claude/settings.json
+!claude/codex-hooks.json
 !claude/link.sh
 !claude/hooks/
 !claude/skills/

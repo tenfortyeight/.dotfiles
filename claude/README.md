@@ -24,6 +24,8 @@ its config already in place:
 | Path | For | What |
 |---|---|---|
 | `~/.codex/AGENTS.md` | Codex | built, see below |
+| `~/.codex/hooks.json` | Codex | built from `codex-hooks.json` plus optional machine-local `hooks.local.json`; calls the shared `~/.claude/hooks` scripts |
+| `~/.codex/agents/*.toml` | Codex | built from the two Markdown agents, with their names, descriptions and instructions; model and effort inherit the session defaults |
 | `~/.config/opencode/AGENTS.md` | opencode | built, see below |
 | `~/.agents/skills/<name>` | Codex, opencode | each skill in `skills/`, linked. Codex reads user skills only from here |
 | `~/.config/opencode/agents` | opencode | link to `~/.claude/agents` |
@@ -33,6 +35,8 @@ both `AGENTS.md` files: `CLAUDE.md`, then `~/.claude/rules/*.md`, then
 `CLAUDE.local.md`. Like `settings.json`, re-run `link.sh` after editing any of
 them. Without its own file opencode would fall back to `~/.claude/CLAUDE.md`
 alone and miss the personal and per-machine parts.
+Never copy either generated `AGENTS.md` into this public repo: it contains
+machine-local rules and personal instructions.
 
 opencode also reads `~/.claude/skills`, so it sees each skill twice by the same
 name, both copies the same file. Codex's `config.toml` and `auth.json` and
@@ -40,8 +44,36 @@ opencode's `opencode.json` stay machine-local: the first holds trusted project
 paths, the second a credential.
 
 opencode resolves the agents' `model: sonnet` to nothing and runs them on the
-session model. Hooks, permissions and auto mode stay Claude-only — the deploy,
-SOPS and AWS-profile guards do not run in other tools.
+session model. Claude's permissions and auto mode stay Claude-only. Codex runs
+the shared guards through its native hooks; opencode has no hook wiring here.
+
+### Codex hooks and agents
+
+`link.sh` generates the user-level hook definitions and standalone TOML agents
+supported by Codex CLI 0.169.0. It does not change `config.toml`, memory or the
+instruction size limit. Run it from the permanent checkout: the shared hook
+symlinks point into whichever checkout ran the script.
+
+Codex requires trust for each exact hook definition. After generating, open
+`/hooks` in Codex, review and trust the hooks, then start a fresh session.
+Untrusted or changed hooks are skipped; generation alone does not activate them.
+The setup never writes trust records or bypasses that review.
+
+Machine-specific callbacks belong in `~/.codex/hooks.local.json`, using the same
+`{"hooks": {"Event": [...]}}` shape as `codex-hooks.json`. Objects merge
+recursively and lists concatenate without duplicates, as for Claude settings.
+Move callbacks worth keeping from an existing `hooks.json` into that overlay
+before rebuilding. A differing generated hooks or agent file is saved alongside
+with a `.replaced-<timestamp>` suffix. Edit the sources and re-run `link.sh`;
+changes to generated files are replaced on the next build.
+
+The Codex `Bash` matcher includes shell commands, and `Edit|Write` includes
+`apply_patch`. Codex passes patch text in `tool_input.command`; the shared file
+parser handles additions, updates, deletions and move destinations, resolving
+relative paths against the hook payload's `cwd`. SOPS protection checks every
+existing affected file, and validation checks every remaining affected file.
+The Stop gate uses `stop_hook_active` to avoid repeated continuations, and
+SessionStart runs `git-tidy` with a bounded timeout.
 
 ## settings.json is built, not linked
 
@@ -125,6 +157,8 @@ Whether to deploy at all is left to auto mode and the instructions; the guard
 only makes sure what gets deployed is what is on origin.
 
 Run `bash ~/.claude/hooks/test-guards.sh` to confirm it fires.
+Run `bash ~/.claude/hooks/test-file-input.sh` for Claude file input and Codex
+patch coverage, including multi-file validation and SOPS moves/deletions.
 
 ### Per-repo specifics
 
