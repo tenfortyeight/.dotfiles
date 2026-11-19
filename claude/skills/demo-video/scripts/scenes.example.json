@@ -1,0 +1,48 @@
+{
+ "voice": "bm_george",
+ "speed": 1.0,
+ "style": {"accent": "#a78bfa", "bg": "#0e0c14", "font": "Inter"},
+ "inject": "inject.js",
+ "first_load": 4,
+ "scenes": [
+  {"name": "intro",
+   "card": {"headline": "From meeting notes to proposal", "subline": "A workflow and a template, doing the first draft for you"},
+   "say": "After a customer meeting, the notes have to become a proposal. This turns them into a finished proposal in your own template.",
+   "steps": []},
+  {"name": "flow",
+   "say": "It is a workflow you can read on one screen.",
+   "steps": [
+    {"eval": "__frame('.react-flow__node-task')"}, {"zoom": "[data-demo=frame]", "pad": 30},
+    {"move": ".react-flow__node[data-id=write]"}, {"wait": 1.5}]},
+  {"name": "start",
+   "say": "Paste the notes and press Start.",
+   "steps": [
+    {"open": "https://app.example.com/form/flow_123", "settle": 2.5},
+    {"until": "document.querySelector('textarea')", "timeout": 20, "settle": 0.5},
+    {"click": "textarea"}, {"eval": "__paste('Kick-off notes…')"},
+    {"wait": 5.5},
+    {"eval": "__tag('Start','start','button')"}, {"click": "[data-demo=start]"},
+    {"ff": 24, "to": 1.5},
+    {"until": "document.querySelector('a[href*=\"/f/\"]')", "timeout": 90, "settle": 1}]},
+  {"name": "result",
+   "say": "A minute later, the deck is ready.",
+   "steps": [
+    {"open": "js:document.querySelector('a[href*=\"/f/\"]').href", "settle": 3.5},
+    {"until": "[...document.querySelectorAll('button, a')].some(b => /present/i.test(b.innerText))", "timeout": 25}]},
+  {"name": "edit",
+   "say": "Correct a figure, and save.",
+   "steps": [
+    {"csp": true},
+    {"eval": "__tag('Edit','edit','button, a')"}, {"click": "[data-demo=edit]"},
+    {"until": "document.querySelector('iframe')", "timeout": 30, "settle": 1},
+    {"dblclick": {"at": [340, 381]}},
+    {"key": "Home", "vk": 36}, {"key": "End", "vk": 35, "modifiers": 8},
+    {"type": {"text": "650–800 kSEK"}}, {"key": "Escape", "vk": 27},
+    {"eval": "__tag('Save','save','button')"}, {"click": "[data-demo=save]"},
+    {"csp": false}]},
+  {"name": "outro",
+   "card": {"headline": "Your notes, your template, your call.", "subline": "One line under it"},
+   "say": "",
+   "steps": []}
+ ]
+}

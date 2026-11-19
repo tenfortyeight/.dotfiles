@@ -107,7 +107,14 @@ Check these first, so a dead end shows up before anyone has approved a script:
   missed selector is listed in one pass, then `contact.py` to look at every scene. Aim at
   things by their text with a helper in the scenes file's `inject` script (CSS uppercase
   changes `innerText`, so compare without case). The same `inject` hides the signed-in
-  person's name.
+  person's name. A trial that would start a real run, send or publish in production gets
+  its own copy of the scenes with those steps taken out, pointed at an existing result.
+- **What borrowed cookies don't carry**: state an app keeps in `localStorage` (a chosen
+  workspace, a theme) is set by the `inject` script on that host. An embedded editor that
+  never finishes loading may depend on the page's CSP, which the recorder bypasses for the
+  cards' fonts: a CSP `sandbox` is what gives its frame the opaque origin it checks. Turn
+  the CSP back on around that scene (`{"csp": true}`, then `{"csp": false}`). A sandboxed
+  frame can't be reached by selector either; aim at it with `{"at": [x, y]}`.
 
 ## 1. Script first, and wait
 

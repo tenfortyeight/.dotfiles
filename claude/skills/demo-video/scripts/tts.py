@@ -45,9 +45,16 @@ def load(model_dir):
     return Kokoro(str(model), str(voices))
 
 
+SILENT_RATE = 24000  # Kokoro's own rate, so every clip in a video matches
+
+
 def say(kokoro, text, voice, speed, path):
     if voice not in kokoro.get_voices():
         sys.exit(f"no voice {voice!r}; run with --sample to hear the choices")
+    if not text.strip():
+        # A card with no voice (the outro, usually) still needs a clip: assemble.py reads one per scene.
+        sf.write(path, [0.0] * (SILENT_RATE // 10), SILENT_RATE)
+        return 0.0
     samples, rate = kokoro.create(text, voice=voice, speed=speed, lang=lang_for(voice))
     sf.write(path, samples, rate)
     return len(samples) / rate
@@ -89,7 +96,7 @@ def report_endings(out_dir, scenes):
         if end is None:
             continue
         st = 12 * np.log2(end / median)
-        last = i == len(scenes) - 1
+        last = i == max(j for j, sc in enumerate(scenes) if sc["say"].strip())
         if st > -2:
             print(f"  {path.name} ({scenes[i]['name']}) ends {st:+.1f} semitones: it doesn't fall"
                   + (", and it is the closing line: reword its last words" if last else ""))

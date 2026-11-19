@@ -31,10 +31,14 @@ A scene is {"name", "say", "card"?, "steps"?}.
   - "steps" run at scene start, one after another. Each is one of:
       {"zoom": selector|null, "pad": px}   camera onto an element (null = whole page)
       {"move": selector}                   glide the pointer there
-      {"click": selector}                  glide, then click with a ripple
+      {"click": selector}                  glide, then click with a ripple; {"dblclick": selector} clicks twice
+                                           (a target may be {"at": [x, y]}: a viewport point, for a sandboxed iframe)
       {"type": {"text": "..."}}            type into the focused field (insertText: React sees it, å ä ö work)
       {"key": "Escape", "vk": 27}          press a key; "modifiers" 1 Alt 2 Ctrl 4 Meta 8 Shift
+      {"csp": true}                        honour the page's CSP for what loads next (false: bypass again)
       {"go": "/path?q=1", "settle": 1.5}   in-app navigation for a single-page app (pushState + popstate)
+      {"open": "https://…", "settle": 2.5} a full page load, e.g. to another app; resets camera and pointer.
+                                           "js:EXPR" takes the URL from the page (a link a run just made)
       {"until": "js", "settle": s}         hold until a JS condition is true; "timeout" per step
       {"ff": seconds, "to": 1}             wait, played back in `to` s (or "factor": n); keep clear of voice
       {"eval": "js"}                       run JS in the page (a hash change is followed by a short wait)
@@ -74,7 +78,11 @@ SHORT_WAIT = 0.3
 SILENT_HOLD = 6.0  # a few quiet seconds are fine; past this a hold starts to feel uneasy, so warn  # after a hash change, so the new view renders before the next step
 
 POINTER_JS = """
-(() => {
+(function init() {
+  // Injected on every new document, which has no <body> yet: wait for it, or every later page load
+  // (an "open" step, a link) runs without a pointer and each move/click on it fails.
+  if (window !== top) return;  // the page only: an embedded editor or preview keeps its own layout
+  if (!document.body) return addEventListener('DOMContentLoaded', init, { once: true });
   if (window.__pointer) return;
   const el = document.createElement('div');
   el.style.cssText = 'position:fixed;left:0;top:0;z-index:2147483000;pointer-events:none;' +
@@ -250,6 +258,12 @@ class Recorder:
 
     # ---- camera
     async def rect(self, sel):
+        if isinstance(sel, dict):
+            # {"at": [x, y]}: a point in the unzoomed viewport, for what no selector reaches (a sandboxed
+            # iframe such as a slide editor). Mapped through the camera so it stays put when zoomed.
+            s, tx, ty = self.cam
+            x, y = sel["at"]
+            return {"x": s * x + tx, "y": s * y + ty, "w": 0, "h": 0}
         r = await self.cdp.js(f"(() => {{ const e = document.querySelector({json.dumps(sel)});"
                               "if (!e) throw new Error('no element: ' + " + json.dumps(sel) + ");"
                               "const r = e.getBoundingClientRect(); return {x:r.x,y:r.y,w:r.width,h:r.height}; })()")
@@ -284,13 +298,14 @@ class Recorder:
             await asyncio.sleep(GLIDE_SECONDS / steps)
         self.pos = (x, y)
 
-    async def click(self, sel):
+    async def click(self, sel, count=1):
         await self.move(sel)
         x, y = self.pos
         await self.cdp.js(f"window.__pointer.ripple({x}, {y})")
-        for kind in ("mousePressed", "mouseReleased"):
-            await self.cdp.send("Input.dispatchMouseEvent", type=kind, x=x, y=y, button="left", clickCount=1)
-            await asyncio.sleep(0.08)
+        for n in range(1, count + 1):
+            for kind in ("mousePressed", "mouseReleased"):
+                await self.cdp.send("Input.dispatchMouseEvent", type=kind, x=x, y=y, button="left", clickCount=n)
+                await asyncio.sleep(0.05)
         await asyncio.sleep(0.4)
 
     async def type_text(self, text):
@@ -315,12 +330,28 @@ class Recorder:
             await self.move(step["move"])
         elif "click" in step:
             await self.click(step["click"])
+        elif "dblclick" in step:
+            await self.click(step["dblclick"], count=2)
         elif "type" in step:
             await self.type_text(step["type"]["text"])
         elif "eval" in step:
             await self.cdp.js(step["eval"])
             if "location.hash" in step["eval"]:
                 await asyncio.sleep(SHORT_WAIT)
+        elif "open" in step:
+            # A full page load, for a move to another app or host ("go" only works inside one SPA).
+            # The new page starts unzoomed with its pointer in the middle, so the camera and pointer follow.
+            # "js:EXPR" reads the URL from the page first, e.g. a link a run has just produced.
+            url = step["open"]
+            url = await self.cdp.js(url[3:]) if url.startswith("js:") else url
+            await self.cdp.send("Page.navigate", url=url)
+            await asyncio.sleep(step.get("settle", 2.5))
+            self.cam, self.pos = (1.0, 0.0, 0.0), (self.w / 2, self.h / 2)
+        elif "csp" in step:
+            # {"csp": true} honours the page's Content-Security-Policy again (the recorder bypasses it so
+            # cards get their fonts), for what loads next. Some frames depend on it: a CSP sandbox gives a
+            # frame the opaque origin an embedded editor checks before it says it is ready.
+            await self.cdp.send("Page.setBypassCSP", enabled=not step["csp"])
         elif "go" in step:
             # In-app navigation for a single-page app: a new history entry and a popstate, no reload.
             await self.cdp.js(f"history.pushState(null, '', {json.dumps(step['go'])});"
