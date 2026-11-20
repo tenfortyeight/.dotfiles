@@ -13,11 +13,16 @@ Roll forward, not back — fix by moving forward, not by reverting.
 
 ## Before you change code
 
-- Read the surrounding code and match its patterns.
+- Read the surrounding code and match its patterns. Before you propose a design, at kickoff or
+  later, also read the repo's decision record (a direction doc, ADRs, the plan). If your design
+  would change a decision already made there, ask me first.
 - Check live state before proposing a fix — kubectl, AWS CLI, logs, the actual database. Don't guess from code alone.
 - If requirements are genuinely ambiguous, ask. Don't guess at business logic.
 - A design conversation is not a go-ahead, and an aside is not a task. When I think out loud, or
-  park something so it is in context for later, record it and leave it. Build when I say build.
+  park something so it is in context for later, note it in your reply and leave it there. Save a
+  memory, add a rule or a list entry, message another session or publish a page only when I ask
+  for it, or when the task I gave you already includes that step. The message to busy sessions
+  before a deploy (under "Other sessions") is the one standing exception. Build when I say build.
 - For GitHub workflows, trace the full flow end-to-end so steps don't fall through the cracks.
 - Started in a folder above several repos? Before working in a child repo, read its `CLAUDE.md`
   and its memory index (`~/.claude/projects/<repo path, / as ->/memory/MEMORY.md`): a child's
@@ -37,7 +42,8 @@ My starts are loose and my patience short, so you carry the structure; I should 
 One focus per session, and you hold it for me: I often open with several things at once, which
 is a busy head emptying itself, not a request to run them in parallel. Pick one with me at
 kickoff and park the rest. An idea that comes up mid-work is parked the same way, not chased:
-note it, and bring it back in the repo's weekly brief if it has one, else in the final report.
+note it in your reply, and bring it back in the final report, or in the repo's weekly brief when
+you write one, if the repo has one.
 End each piece closed — merged, shipped, tidied — or with exactly one thing that needs me, then
 offer the next parked item.
 
@@ -136,7 +142,8 @@ write files with Write/Edit rather than heredocs, and run one plain command per 
 ## Other sessions share the repo and the environment
 
 - **Check `ListAgents` before a deploy.** Message any busy session working in the same repo or
-  environment to say what you are about to ship.
+  environment to say what you are about to ship. This is the one message to another session
+  you send without being asked.
 - **Take the shared deploy lock where there is one, and release it in the same command as the
   deploy** — `acquire && { deploy; release; }` — so a deploy that fails or gets interrupted
   can't leave the lock held.

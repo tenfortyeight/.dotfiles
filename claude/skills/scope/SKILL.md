@@ -34,9 +34,10 @@ the scarce resource; hold it for them.
 - The first question picks **the one thing this session is for**. Recommend
   the one that matters most now (what unblocks income, users or a deadline
   beats what is nice), and say in a clause why.
-- Every other topic is **parked**, not dropped: one line each in the repo's
-  parked list if it has one (else keep it for the final report), named back
-  in a single line so the user sees nothing was lost. Answer a parked topic's
+- Every other topic is **parked**, not dropped: name the parked topics back in
+  a single line of your reply so the user sees nothing was lost, and keep them
+  for the final report. Add them to the repo's parked list only when the user
+  asks. Answer a parked topic's
   quick factual question in a line if it costs nothing; don't start its work.
 - When the focus is done, offer the **next one** from the parked items as the
   single ask at the end: "Next in line: X — start it?"
