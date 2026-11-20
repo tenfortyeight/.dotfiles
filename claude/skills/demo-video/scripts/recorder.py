@@ -19,6 +19,8 @@ when the page draws and moves one itself.
 
 The scenes file may set "inject" (a JS file, beside it, run on every page load: hiding the person's
 name, helpers for steps) and "first_load" (seconds to wait after the first navigation, default 2.5).
+"setup" is a list of steps run before the first frame (fill a form, zoom onto it), so the video
+opens on a ready view; a video recorded in parts opens each part this way.
 
 A scene is {"name", "say", "card"?, "steps"?}.
   - a card may instead be {"html", "css"?} or {"file": "cards/intro.html"} (HTML with its <style>): a whole custom card the tone calls for (a film-reel
@@ -39,12 +41,16 @@ A scene is {"name", "say", "card"?, "steps"?}.
       {"go": "/path?q=1", "settle": 1.5}   in-app navigation for a single-page app (pushState + popstate)
       {"open": "https://…", "settle": 2.5} a full page load, e.g. to another app; resets camera and pointer.
                                            "js:EXPR" takes the URL from the page (a link a run just made)
-      {"until": "js", "settle": s}         hold until a JS condition is true; "timeout" per step
+      {"until": "js", "settle": s}         hold until a JS condition is true; "timeout" per step.
+                                           With "to": s, the wait plays back in s seconds (a run finishing)
+      {"cut": true} … {"cut": false}       drop everything between from the video (a loading screen)
       {"ff": seconds, "to": 1}             wait, played back in `to` s (or "factor": n); keep clear of voice
       {"eval": "js"}                       run JS in the page (a hash change is followed by a short wait)
       {"wait": seconds}
 A scene holds for its voice clip + "breath" (cards at least CARD_MIN seconds),
-or until its steps finish if that is longer: the picture waits for the voice.
+or until its steps finish if that is longer: the picture waits for the voice. The hold counts
+played-back time, so a fast-forward inside a scene plays under its voice and the scene is held
+on to cover the rest of the line.
 
 Timeouts: --timeout caps the whole recording, --step-timeout each step (plus its own wait).
 Either one stops with a message naming what was running.
@@ -176,13 +182,15 @@ def serve(root):
     return f"http://127.0.0.1:{server.server_port}/"
 
 
-def card_js(card, style, hold):
+def card_js(card, style, hold, fade_in=True):
     """JS that draws the card as an overlay on the loaded app page."""
     dots = "".join(f'<i style="left:{p}%;animation-delay:{0.5 + p / 100 * 1.1:.2f}s"></i>' for p in (0, 33, 66, 100))
     tags = "<b></b>".join(f'<span style="animation-delay:{0.9 + n * 0.15:.2f}s">{t}</span>' for n, t in enumerate(card.get("tags", [])))
     sub = (f'<div class="sub{" code" if card.get("code") else ""}">{card["subline"]}</div>'
            if card.get("subline") else "")  # "code": true sets the subline in monospace, e.g. a command
     css = CARD_CSS % {**style, "css": style.get("css", ""), "out_at": max(hold - 0.5, 1)} + card.get("css", "")
+    if not fade_in:
+        css += ".__card{animation-name:none,__out}"
     tag_line = f'<div class="tags">{tags}</div>' if tags else ""
     html = card.get("html") or f'<h1>{card["headline"]}</h1><div class="line">{dots}</div>{tag_line}{sub}'
     if style.get("font_face"):
@@ -236,6 +244,7 @@ class Recorder:
     def __init__(self, cdp, out, width, height):
         self.cdp, self.out, self.w, self.h = cdp, out, width, height
         self.frames, self.t0 = [], None
+        self.cut_at = None
         self.ff = []  # (start, end, factor) on the video clock: spans played back faster
         self.pos = (width / 2, height / 2)
         self.cam = (1.0, 0.0, 0.0)  # scale, tx, ty of the body transform
@@ -254,7 +263,7 @@ class Recorder:
         asyncio.get_running_loop().create_task(self.cdp.send("Page.screencastFrameAck", sessionId=p["sessionId"]))
 
     def now(self):
-        return time.time() - self.t0
+        return time.time() - self.t0 if self.t0 else 0.0  # 0 before the first frame (setup steps)
 
     # ---- camera
     async def rect(self, sel):
@@ -366,8 +375,12 @@ class Recorder:
             await asyncio.sleep(0.3)
         elif "until" in step:
             # Hold until a JS condition is true (an answer has arrived), polling; the step timeout caps it.
-            while not await self.cdp.js(f"!!({step['until']})"):
+            start = self.now()
+            # The condition may be a promise (a fetch of the run's status): it is awaited.
+            while not await self.cdp.js(f"(async () => !!(await ({step['until']})))()"):
                 await asyncio.sleep(0.5)
+            if "to" in step:  # however long it took, it plays back in `to` seconds
+                self.ff.append((start, self.now(), max((self.now() - start) / step["to"], 1.0)))
             await asyncio.sleep(step.get("settle", 0))
         elif "ff" in step:
             # Fast-forward a wait the viewer needn't sit through (an answer being written): recorded in
@@ -377,6 +390,17 @@ class Recorder:
             await asyncio.sleep(step["ff"])
             factor = step.get("factor") or step["ff"] / step.get("to", 1.0)
             self.ff.append((start, self.now(), max(factor, 1.0)))
+        elif "cut" in step:
+            # A cut is a fast-forward played back in no time at all.
+            if step["cut"]:
+                self.cut_at = self.now()
+            else:
+                self.ff.append((self.cut_at, self.now(), 1e9))
+                # The screencast only sends a frame when something changes: nudge one, or a stale frame
+                # from inside the cut (a loading screen) is what shows until the page next moves.
+                await self.cdp.js("document.documentElement.style.outlineColor = "
+                                  "document.documentElement.style.outlineColor ? '' : 'transparent'")
+                await asyncio.sleep(0.15)
         elif "wait" in step:
             await asyncio.sleep(step["wait"])
         else:
@@ -476,6 +500,16 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
     base = Path(args.scenes).parent
     style = card_style(cfg, base, await cdp.js("getComputedStyle(document.body).backgroundColor"),
                        args.accent, args.bg, args.font)  # style.css: the tone's extra card CSS
+    # "setup": steps run before the first frame, so the video opens on a view that is ready (a form
+    # filled in, the camera already on it) rather than on the page getting there.
+    for step in cfg.get("setup", []):
+        await rec.run_step(step, args.step_timeout, args.probe)
+    first = cfg["scenes"][0]
+    if "card" in first:  # up before the first frame, with no fade-in, so the app never shows before it
+        await cdp.js(card_js(load_card(first["card"], base), style, card_hold(cfg, first, lengths["00.wav"]), fade_in=False))
+    # Let the page paint what setup and the card changed, or the first frame shows the page before them.
+    await cdp.js("new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
+    await asyncio.sleep(ZOOM_SECONDS + 0.2)
     await cdp.send("Page.startScreencast", format="jpeg", quality=88, maxWidth=1920, maxHeight=1080, everyNthFrame=1)
     while not rec.t0:
         await cdp.js("document.body.style.outline = '0'")  # nudge Chrome into sending the first frame
@@ -483,22 +517,26 @@ async def run_scenes(cdp, rec, cfg, lengths, args):
 
     timeline = []
     for i, scene in enumerate(cfg["scenes"]):
-        clip = lengths[f"{i:02d}.wav"]
-        hold = clip + cfg.get("breath", 0.8)
-        if "card" in scene:
-            hold = max(hold, CARD_MIN)
+        hold = card_hold(cfg, scene, lengths[f"{i:02d}.wav"])
+        if "card" in scene and i > 0:
             await cdp.js(card_js(load_card(scene["card"], base), style, hold))
         start = rec.now()
         print(f"scene {i} {scene['name']} @ {start:.1f}s hold {hold:.1f}s")
         for step in scene.get("steps", []):
             await rec.run_step(step, args.step_timeout, args.probe)
-        await asyncio.sleep(max(0, start + hold - rec.now()))
+        at = squeezer(rec.ff)  # the hold is on the played clock: a fast-forward under the voice is made up
+        await asyncio.sleep(max(0, hold - (at(rec.now()) - at(start))))
         timeline.append({"name": scene["name"], "start": start, "end": rec.now(), "voiced": hold})
 
     end = rec.now() + 0.3
     await asyncio.sleep(0.3)
     await cdp.send("Page.stopScreencast")
     write_outputs(rec, timeline, end)
+
+
+def card_hold(cfg, scene, clip):
+    hold = clip + cfg.get("breath", 0.8)
+    return max(hold, CARD_MIN) if "card" in scene else hold
 
 
 def squeezer(ff):

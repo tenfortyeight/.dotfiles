@@ -148,7 +148,20 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   so the voice talking over it is better than the picture sitting there alone. At most
   2–3 s with no voice. The recorder
   warns about any scene that holds more than 6 s past its voice; fix each one before
-  handing over.
+  handing over. A run that is itself the story (steps lighting up) plays under the voice
+  instead: `{"until": "<fetch of the run's status>", "to": 6}` squeezes however long it took
+  into 6 s, and the scene holds on to finish the line.
+- **Cut loading screens.** `{"cut": true}` … `{"cut": false}` around a page change drops
+  everything between, so the viewer goes from one view straight to the next. A loading logo
+  between two apps reads as a new video starting.
+- **One thread, not a hub.** A demo that keeps returning to one overview screen, each time
+  for a different feature, feels skippy. Follow one real example from start to finish, open
+  each line on the hand-off from the last ("While it runs…", "A minute later…"), and show the
+  input turning into the output in one shot (the notes beside the slide they became). An
+  overview first (four wide shots, one short line each) works even at two minutes; a small
+  step bar on screen throughout tells the viewer where they are. The overview needs the
+  result before it happens: record the detail part first, then the overview on its results,
+  and join the two. `"setup"` steps (before the first frame) open each part on a ready view.
 - **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the
   recording. Serve local files over http.
 - **Zoom** with a CSS transform on `<body>` and `overflow: hidden` on `<html>`, so the
