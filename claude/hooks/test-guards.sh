@@ -12,7 +12,7 @@ HOOKS="${HOOKS_DIR:-$HOME/.claude/hooks}"
 REF="$HOOKS/deploy-ref-guard.sh"
 pass=0; fail=0
 
-payload() { printf '%s' "$1" | jq -Rc '{tool_input:{command:.}}'; }
+payload() { printf '%s' "$1" | jq -Rsc '{tool_input:{command:.}}'; }
 
 check() { # <expected-exit> <guard> <command> [label]
   local want="$1" guard="$2" cmd="$3" label="${4:-$3}" got
@@ -114,6 +114,24 @@ check 2 "$REF" './scripts/example-create-app.sh' 'repo pattern -> blocked inside
 # A malformed repo pattern must fail CLOSED, not wave the deploy through.
 printf 'example-create-app(\n' > .claude/deploy-commands
 check 2 "$REF" './scripts/example-create-app.sh' 'malformed repo pattern -> fails closed'
+
+echo "== commit-hygiene only judges the commit segment =="
+HYG="$HOOKS/commit-hygiene.sh"
+check 0 "$HYG" "python3 - <<'EOF'
+print('git commit is mentioned here')
+EOF" 'unrelated heredoc mentioning git commit passes'
+check 0 "$HYG" 'git commit -m docs && cat <<EOF
+notes
+EOF' 'heredoc in a later segment passes'
+check 0 "$HYG" 'git -C repo commit -m "x"' 'git -C commit passes'
+check 2 "$HYG" 'git commit -F - <<EOF
+msg
+EOF' 'git commit -F - blocked'
+check 2 "$HYG" 'git -C repo commit -m "$(cat msg)"' 'git -C commit with $(cat blocked'
+check 2 "$HYG" 'git commit -m "$(cat <<'"'"'X'"'"'
+msg
+X
+)"' 'heredoc with any delimiter blocked'
 
 echo "== stale-base only checks commits =="
 mkdir -p "$TMP/bin"
