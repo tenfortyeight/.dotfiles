@@ -17,7 +17,7 @@ command -v jq >/dev/null 2>&1 || exit 0
 payload="$(cat 2>/dev/null || true)"
 cmd="$(printf '%s' "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null || true)"
 [ -z "$cmd" ] && exit 0
-printf '%s' "$cmd" | grep -qE '(^|[;&|])[[:space:]]*git[[:space:]]+commit' || exit 0
+printf '%s' "$cmd" | grep -qE '(^|[;&|[:space:]])git([[:space:]]+(-C|-c)[[:space:]]+[^[:space:]]+)*[[:space:]]+commit' || exit 0
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
 git remote get-url origin >/dev/null 2>&1 || exit 0
@@ -43,6 +43,16 @@ fi
 
 behind="$(git rev-list --count "HEAD..origin/$branch" 2>/dev/null || echo 0)"
 [ "${behind:-0}" -gt 0 ] || exit 0
+
+# Warn at most once per branch per hour — the same warning on every commit is
+# noise. This stamp is separate from the fetch stamp above.
+current="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo detached)"
+warned="$git_dir/claude-gates/warned-$(printf '%s' "$current" | tr '/' '-')"
+if [ -f "$warned" ] && [ -z "$(find "$warned" -mmin +60 2>/dev/null)" ]; then
+  exit 0
+fi
+mkdir -p "$(dirname "$warned")" 2>/dev/null || true
+: > "$warned"
 
 echo "⚠️  REMINDER: HEAD is $behind commit(s) behind origin/$branch. You are committing onto a stale base — another session has pushed since this work started. Merge it in now (git merge origin/$branch) rather than after N commits — never rebase."
 exit 0

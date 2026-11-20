@@ -240,7 +240,7 @@ live Prometheus endpoint before committing a panel.
 
 ## Git
 
-**Fetch first** and branch from `origin/<default>`; `stale-base-guard` warns at each commit if origin has moved since.
+**Fetch first** and branch from `origin/<default>`; `stale-base-guard` warns on commit if origin has moved since (once per branch per hour).
 
 **Never rebase or force-push a feature branch — merge the default branch into it.** Other
 sessions may have the branch checked out, and rewritten history strands their work.
