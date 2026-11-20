@@ -162,6 +162,14 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   step bar on screen throughout tells the viewer where they are. The overview needs the
   result before it happens: record the detail part first, then the overview on its results,
   and join the two. `"setup"` steps (before the first frame) open each part on a ready view.
+- **More than one app: name the parts once, show the back end as a result.** A video that
+  hops between two apps without saying why loses a non-technical viewer. Say once what each
+  part is for ("an agent that does the writing, and artyfactory, where your proposals live"),
+  group the step bar the same way, and switch apps once. Show the engine as a small status card
+  in the main app's look, ticked from the real run's status, never as its own diagram or
+  settings page; quote its instructions on a card rather than zooming into a config panel.
+- **Avatars are photos.** Hide every small round image (round itself or clipped by its
+  wrapper) and swap the initials beside it; a name swap alone leaves the face on screen.
 - **Never navigate to a `file://` page** — it breaks CDP mouse input for the rest of the
   recording. Serve local files over http.
 - **Zoom** with a CSS transform on `<body>` and `overflow: hidden` on `<html>`, so the
