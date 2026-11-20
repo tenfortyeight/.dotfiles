@@ -82,7 +82,11 @@ for the finished mp4. A video with no live app (every scene an animated diagram 
 the same pipeline: `recorder.py --serve DIR index.html` serves your page locally, each scene's
 step is `{"eval": "play('scene')"}`, `"pointer": ""` hides the arrow when the page draws its own,
 custom cards can live in files (`{"file": "cards/intro.html"}`), and `style.font_file` embeds the
-app's own display face when Google Fonts lacks it. Use
+app's own display face when Google Fonts lacks it. `edit_take.py` fixes a recording without
+re-recording it (hold a frame longer, cut a span, show a held frame over a span, truncate),
+moving each scene's start so the voice still lands on it: the way to trim a seam after a take
+that cost a real run. A short overlay over a still frame (`--serve` a page with the frame as its
+background) can be recorded separately and joined in. Use
 and improve them rather than writing new ones, and put back whatever worked better, so
 the next video starts further along.
 
