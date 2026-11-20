@@ -10,7 +10,7 @@ file retired from this repo, so a deleted hook or agent doesn't linger.
 | Path | What it is |
 |---|---|
 | `CLAUDE.md` | Global instructions: TDD cycle, code principles, error handling, security basics, quality gates, git workflow, "verify don't recall", how a piece of work runs, working hands-off, the lead as coordinator, sharing repos and environments with other sessions, definition of done |
-| `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
+| `settings.json` | Hook wiring, generic permission allow rules, theme, effort level, subagent effort (`CLAUDE_CODE_SUBAGENT_EFFORT=medium` in `env`; Claude-only, Codex and opencode ignore it), transcript retention. All paths `$HOME`-relative. Merged with the machine-local overlay, see below |
 | `hooks/` | Eight enforcement hooks, `git-tidy.sh`, and `test-guards.sh` |
 | `skills/` | `go` (pre-PR chain), `scope` (kickoff interview), `verify`, `checkpoint`, `review-squad`, `pr-review`, `issue`, `create-issue`, `workflow-trace`, `release-notes` (cheerful notes on what shipped), `wwad` (web design that looks decided, not generated), `demo-video` (a narrated screencast of the real app). Skills rather than `commands/`: Claude Code treats the two alike, and a skill also loads in Codex and opencode |
 | `agents/` | Two stack-generic Node.js agents: error handling and persistence. Written to load in both Claude Code and OpenCode: `mode: subagent` is read only by OpenCode, and OpenCode ignores the Claude-style `model: sonnet` alias, so keep both lines |
@@ -146,8 +146,8 @@ configured and enforces nothing. Every hook here reads stdin with `jq`.
 | `deploy-ref-guard` | PreToolUse | No deploy unless `HEAD == origin/<default>` and the tree is clean (`# REF-OVERRIDE`) |
 | `sops-guard` | PreToolUse | Never edit an encrypted SOPS file in place |
 | `aws-profile-guard` | PreToolUse | Mutating AWS calls must name an explicit profile |
-| `commit-hygiene` | PreToolUse | Oneliner commit messages, no heredocs |
-| `stale-base-guard` | PreToolUse | Warns when committing onto a base that is behind origin |
+| `commit-hygiene` | PreToolUse | Oneliner commit messages: no heredoc, `-F -` or `$(cat` in the commit segment (also `git -C dir commit`); heredocs elsewhere in the command pass |
+| `stale-base-guard` | PreToolUse | Warns when committing onto a base that is behind origin, at most once per branch per hour |
 | `terraform-push-reminder` | PreToolUse | Warns that CI is linux/amd64 before pushing `.tf` changes |
 | `post-edit-validate` | PostToolUse | terraform fmt / yamllint / shellcheck / kustomize / JSON validity |
 | `verifier-gate` | Stop | Blocks ending a turn on substantive unverified source changes |

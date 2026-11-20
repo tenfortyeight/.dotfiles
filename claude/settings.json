@@ -1,6 +1,7 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_EFFORT": "medium"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -68,13 +69,11 @@
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/commit-hygiene.sh",
-            "if": "Bash(git commit*)"
+            "command": "$HOME/.claude/hooks/commit-hygiene.sh"
           },
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/stale-base-guard.sh",
-            "if": "Bash(git commit*)",
             "timeout": 20
           },
           {
