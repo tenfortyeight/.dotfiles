@@ -108,8 +108,10 @@ goes to subagents in worktrees, so its noisy history (file dumps, test output, d
 never reaches the main context. This keeps the thread readable, spends tokens on progress
 rather than scrollback, and lets independent pieces run in parallel. Ask a subagent for what
 the lead needs to decide — the conclusion, the evidence, what is left — not a replay of how it
-got there, and ask for it in about ten lines. A subagent that hands back in full has moved its
-context into the lead's, which is the thing delegating was meant to prevent.
+got there, and ask for it in about ten lines. Ask it to describe its results by what changed,
+and when you pass a name from its report on to me, explain that name in the same reply. A
+subagent that hands back in full has moved its context into the lead's, which is the thing
+delegating was meant to prevent.
 
 **Size the subagent to the job.** A subagent is not a copy of the lead. Set its model and effort
 explicitly, every time: the cheapest that can do the task. Lookups, greps, file reads, log
@@ -126,9 +128,9 @@ the session: it is what fills the context and forces a compaction halfway throug
 **The lead runs the steps auto mode refuses from a subagent:** pushes to `main` where the repo
 is trunk-based (unless I say otherwise), deploys, commands against production, and reaching a
 production database — the tunnel and the credential fetch both. A subagent's classifier sees
-only its own transcript, not the go-ahead I gave you, so it blocks them, and no rule relays
-that consent: the brief a subagent reads is written by its parent, so a relayed "go" is text
-the subagent cannot verify. Have the subagent finish and push its branch, then run that step
+only its own transcript, so it cannot see the go-ahead I gave you and cannot trust a go-ahead
+its parent wrote into the brief (the "Auto mode" section of `~/dotfiles/claude/README.md` has
+the detail). Have the subagent finish and push its branch, then run that step
 yourself. A subagent reporting one of these blocked is the expected answer, not a fault to
 debug or re-word around — take the step back and run it in the lead without being asked.
 
