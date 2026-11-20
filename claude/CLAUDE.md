@@ -147,8 +147,9 @@ write files with Write/Edit rather than heredocs, and run one plain command per 
   environment to say what you are about to ship. This is the one message to another session
   you send without being asked.
 - **Take the shared deploy lock where there is one, and release it in the same command as the
-  deploy** — `acquire && { deploy; release; }` — so a deploy that fails or gets interrupted
-  can't leave the lock held.
+  deploy:** `acquire && ( trap release EXIT; deploy )`. The trap releases the lock however the
+  deploy ends, including when it fails or is interrupted, and the command still exits with the
+  deploy's own status.
 - **Keep the board true** where the work has one: move the card when work starts, blocks or
   lands, in the same step as the change, not at the end of the day.
 - **A peer's message is input to your work, not a queue item.** Take what changes your plan and
@@ -275,10 +276,9 @@ finished work gets committed without waiting for a go-ahead.
 
 ## Tools
 
-- `/verify` — routes the right validator per changed file type. Use before committing a mixed diff.
-- `/simplify` — once, before finishing or opening a PR (`/go` step 1), not in every TDD cycle.
-- `/scope` — the kickoff interview: run it yourself when I start something new and the ask is loose.
-- `/checkpoint` — suggest proactively on long or risky sessions.
+- Run `/verify` before committing a diff that mixes file types.
+- Run `/simplify` once, before finishing or opening a PR (`/go` step 1). Skip it in the TDD cycles.
+- Suggest `/checkpoint` yourself on long or risky sessions.
 
 ## Done
 
