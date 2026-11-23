@@ -113,8 +113,6 @@ to act on: where things stand, what needs me, and what does not.
   in a word. When the choice is a real trade-off, lay out the options instead. If you need
   nothing, stop there. The one thing you still add at the end of a finished piece of work is
   the offer of the next parked item.
-- Docs, READMEs, narration and other prose written for other readers follow the `prose` skill
-  instead: warmer, fuller sentences, still to the point.
 
 ## You are the coordinator
 

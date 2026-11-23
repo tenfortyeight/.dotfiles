@@ -135,8 +135,7 @@ This is the one stop: recording is cheap to redo, but a script nobody wanted is 
   if it comes out short, add a scene rather than padding with pauses.
 - **Voice:** say what the viewer is looking at and why it matters to them, in plain
   words. Not the UI's labels read aloud, not "Here we can see". British spelling for a
-  British voice. The `prose` skill's habits to cut apply here
-  too, inside the genre's register.
+  British voice.
 - **Intro** names the thing and the problem it solves in a line. **Outro** is a short
   line that sticks — "Every time." — with a subline under it.
 
