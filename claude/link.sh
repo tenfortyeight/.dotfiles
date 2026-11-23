@@ -112,7 +112,7 @@ for f in sops-guard deploy-ref-guard \
   link "hooks/$f.sh" "hooks/$f.sh"
 done
 
-SKILLS=(go scope verify checkpoint review-squad pr-review issue create-issue workflow-trace release-notes wwad demo-video)
+SKILLS=(go scope verify checkpoint review-squad pr-review issue create-issue workflow-trace release-notes wwad demo-video prose)
 for s in "${SKILLS[@]}"; do
   link "skills/$s" "skills/$s"
 done
