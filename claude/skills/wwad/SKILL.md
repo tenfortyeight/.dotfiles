@@ -60,6 +60,12 @@ Write these down before any code — one sentence each:
 If you cannot write the three sentences, the screen is not understood yet. Write your best
 guess, say it in a line, and carry on; ask only if the answer is a business decision.
 
+**Everything a person can open has its own address**: an item, a record, a run, a document.
+A pasted link lands on it, a reload keeps it and Back leaves it. A link someone else sends
+(an issue, a chat message, a notice) always points there. Prefer a readable slug to a bare
+id where the thing has a stable name, keep the id working beside it, and keep old addresses
+landing when the scheme changes.
+
 ## 2. Find the picture
 
 Ask what the user holds in their head when they think about this thing. If the data has a
